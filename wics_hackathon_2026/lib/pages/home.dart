@@ -16,30 +16,6 @@ class _HomePage extends State<HomePage> {
   List<Map<String, dynamic>> dailyTasks = [];
   List<Map<String, dynamic>> weeklyTasks = [];
 
-  @override
-  void initState() {
-    super.initState();
-    getUserHobbyTasks();
-  }
-
-  
-  void getUserHobbyTasks() async {
-    final User? user = Auth().currentUser;
-    if (user == null) return;
-
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user?.uid).get();
-    if (userDoc.exists) {
-      final userData = userDoc.data();
-      final dTasks = userData?['hobbies']?[widget.hobbyKey]?['Daily_tasks']??[];
-      final wTasks = userData?['hobbies']?[widget.hobbyKey]?['Weekly_tasks']??[];
-
-      setState(() {
-        dailyTasks = List<Map<String,dynamic>>.from(dTasks);
-        weeklyTasks = List<Map<String,dynamic>>.from(wTasks);
-      });
-    }
-  }
-
   Future<void> addThreeTasks() async {
   final User? user = Auth().currentUser;
   if (user == null) return;
@@ -99,8 +75,6 @@ class _HomePage extends State<HomePage> {
       }
     }
   }, SetOptions(merge: true));
-
-  getUserHobbyTasks(); // Refresh the list
 }
 
   @override

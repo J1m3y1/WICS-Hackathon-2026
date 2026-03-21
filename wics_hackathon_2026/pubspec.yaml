@@ -12,6 +12,8 @@ dependencies:
   firebase_auth: ^6.2.0
   cloud_firestore: ^6.1.3
   firebase_core: ^4.5.0
+  image_picker: ^1.0.7
+
   fl_chart: ^0.68.0
 
 dev_dependencies:
@@ -25,6 +27,7 @@ flutter:
     - assets/images/gympost.avif
     - assets/images/guitar.jpg
     - assets/images/chess.avif
+    - assets/images/painting.webp
     - lib/images/boxing.jpg
     - lib/images/gaming.jpg
     - lib/images/gym.jpg

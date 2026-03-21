@@ -105,7 +105,7 @@ class _LoginPage extends State<LoginPage> {
         labelText: title,
         floatingLabelBehavior: FloatingLabelBehavior.never,
         filled: true,
-        fillColor: Colors.black,
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: Colors.white),
@@ -131,7 +131,7 @@ class _LoginPage extends State<LoginPage> {
             ? signInWithEmailPassword
             : createUserWithEmailPassword,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.black,
           foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(

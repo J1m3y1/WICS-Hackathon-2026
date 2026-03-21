@@ -24,4 +24,13 @@ flutter:
     - assets/images/gympost.avif
     - assets/images/guitar.jpg
     - assets/images/chess.avif
-    - assets/images/painting.webp
+    - assets/images/painting.web
+    - lib/images/boxing.jpg
+    - lib/images/gaming.jpg
+    - lib/images/gym.jpg
+    - lib/images/picketball.jpg
+    - lib/images/soccer.jpg
+    - lib/images/tennis.png
+    - lib/images/gamescene1.jpg
+    - lib/images/gamescene2.jpg
+

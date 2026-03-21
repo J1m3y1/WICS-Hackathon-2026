@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:wics_hackathon_2026/pages/add_verification.dart';
-import 'package:wics_hackathon_2026/pages/community_feed.dart';
+import 'package:wics_hackathon_2026/pages/profile.dart';
 import 'package:wics_hackathon_2026/pages/home.dart';
-import 'package:wics_hackathon_2026/pages/tasks.dart';
+import 'package:wics_hackathon_2026/pages/feed.dart';
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  final String hobbyKey;
+  const MainNavigation({super.key, required this.hobbyKey});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -13,38 +13,38 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int myIndex = 0;
-  final screens = [HomePage(), TasksPage(), VerificationPage(), CommunityFeed()];
+  late final List<Widget> screens;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use widget.hobbyKey here
+    screens = [
+      HomePage(hobbyKey: widget.hobbyKey),
+      FeedPage(hobbyKey: widget.hobbyKey),
+      ProfilePage(hobbyKey: widget.hobbyKey),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-        body: screens[myIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.cyan,
-          currentIndex: myIndex,
-          onTap: (index) {
-            setState(() {
-              myIndex = index;
-            });
-          },
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.task),
-              label: 'Tasks',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.add),
-              label: '+',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.collections),
-              label: 'Community',
-            ),
-          ],
-        ),
-      );
-    }
+    return Scaffold(
+      body: screens[myIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.cyan,
+        currentIndex: myIndex,
+        onTap: (index) {
+          setState(() {
+            myIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.feed), label: 'Feed'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
+    );
+  }
 }
-

@@ -19,9 +19,10 @@ class _HobbyPage extends State<HobbyPage> {
           children: hobbies.entries.map((entry) {
             return ElevatedButton(
               onPressed: () {
+                final hobbyKey = entry.key;
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MainNavigation()),
+                  MaterialPageRoute(builder: (context) => MainNavigation(hobbyKey: hobbyKey)),
                 );
                 },
               style: ElevatedButton.styleFrom(

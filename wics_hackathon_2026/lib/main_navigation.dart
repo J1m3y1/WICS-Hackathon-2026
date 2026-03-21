@@ -4,7 +4,8 @@ import 'package:wics_hackathon_2026/pages/home.dart';
 import 'package:wics_hackathon_2026/pages/feed.dart';
 
 class MainNavigation extends StatefulWidget {
-  const MainNavigation({super.key});
+  final String hobbyKey;
+  const MainNavigation({super.key, required this.hobbyKey});
 
   @override
   State<MainNavigation> createState() => _MainNavigationState();
@@ -12,7 +13,18 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int myIndex = 0;
-  final screens = [HomePage(), FeedPage(), ProfilePage()];
+  late final List<Widget> screens;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use widget.hobbyKey here
+    screens = [
+      HomePage(hobbyKey: widget.hobbyKey),
+      FeedPage(hobbyKey: widget.hobbyKey),
+      ProfilePage(hobbyKey: widget.hobbyKey),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class FeedPage extends StatefulWidget {
-  const FeedPage({super.key});
+  final String hobbyKey;
+  const FeedPage({super.key, required this.hobbyKey});
 
   @override
   State<FeedPage> createState() => _FeedPage();

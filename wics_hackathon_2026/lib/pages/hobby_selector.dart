@@ -122,12 +122,10 @@ class _HobbyPageState extends State<HobbyPage> {
                     ...filteredHobbies.map(
                       (hobby) => GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MainNavigation(),
-                            ),
-                          );
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => MainNavigation(hobbyKey: hobby.name)),
+                            );
                         },
                         child: _buildHobbyCard(hobby),
                       ),
@@ -272,7 +270,7 @@ class _HobbyPageState extends State<HobbyPage> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
+          MaterialPageRoute(builder: (context) => MainNavigation(hobbyKey: hobby.name)),
         );
       },
       child: Container(

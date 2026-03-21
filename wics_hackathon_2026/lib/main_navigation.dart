@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:wics_hackathon_2026/pages/community_feed.dart';
 import 'package:wics_hackathon_2026/pages/profile.dart';
 import 'package:wics_hackathon_2026/pages/home.dart';
-import 'package:wics_hackathon_2026/pages/feed.dart';
 
 class MainNavigation extends StatefulWidget {
   final String hobbyKey;
@@ -21,7 +21,7 @@ class _MainNavigationState extends State<MainNavigation> {
     // Use widget.hobbyKey here
     screens = [
       HomePage(hobbyKey: widget.hobbyKey),
-      FeedPage(hobbyKey: widget.hobbyKey),
+      CommunityFeed(hobbyKey: widget.hobbyKey),
       ProfilePage(hobbyKey: widget.hobbyKey),
     ];
   }

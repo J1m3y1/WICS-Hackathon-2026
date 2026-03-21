@@ -40,14 +40,14 @@ final List<HobbyPost> samplePosts = [
     timeAgo: '18 min ago',
     imagePath: 'assets/images/guitar.jpg', 
   ),
-  HobbyPost(
-    username: 'jordan',
-    hobby: 'Painting',
-    level: 3,
-    xp: 60,
-    timeAgo: '45 min ago',
-    imagePath: 'assets/images/painting.webp', 
-  ),
+  // HobbyPost(
+  //   username: 'jordan',
+  //   hobby: 'Painting',
+  //   level: 3,
+  //   xp: 60,
+  //   timeAgo: '45 min ago',
+  //   imagePath: 'assets/images/painting.webp', 
+  // ),
   HobbyPost(
     username: 'sam',
     hobby: 'Chess',
@@ -61,7 +61,8 @@ final List<HobbyPost> samplePosts = [
 // Main Widget 
 
 class CommunityFeed extends StatefulWidget {
-  const CommunityFeed({super.key});
+  final String hobbyKey;
+  const CommunityFeed({super.key, required this.hobbyKey});
 
   @override
   State<CommunityFeed> createState() => _CommunityFeedState();
@@ -212,12 +213,4 @@ AspectRatio(
     );
   }
 }
-// entry point
 
-void main() {
-  runApp(
-    const MaterialApp(
-        home: CommunityFeed(),
-    ),
-  );
-}

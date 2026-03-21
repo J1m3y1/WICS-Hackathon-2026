@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/main_navigation.dart';
+import 'package:wics_hackathon_2026/pages/profile_screen.dart';
+import 'package:wics_hackathon_2026/services/auth.dart';
 import '../../shared/app_data.dart';
 import '../../shared/app_theme.dart';
 
@@ -14,29 +17,44 @@ class _HobbyPageState extends State<HobbyPage> {
   String selectedFilter = 'All';
 
   final List<String> filters = ['All', 'Creative', 'Relax', 'Level Up'];
+  final CollectionReference users = FirebaseFirestore.instance.collection("users");
 
-  List<Hobby> get filteredHobbies {
+  Stream<List<Hobby>> getUserHobbies(String userID) {
+    return users.doc(userID).snapshots().map((snapshot) {
+      final data = snapshot.data() as Map<String, dynamic>? ?? {};
+      final hobbiesMap = data['hobbies'] as Map<String, dynamic>? ?? {};
+
+      return hobbiesMap.entries.map((entry) {
+        final hobbyData = entry.value as Map<String, dynamic>? ?? {};
+        final info = hobbyData['info'] as Map<String, dynamic>? ?? {};
+        return Hobby.fromMap(info, hobbyData);
+      }).toList();
+    });
+  }
+
+
+  List<Hobby> applyFilter(List<Hobby> hobbies) {
     switch (selectedFilter) {
       case 'Creative':
-        return hobbiesList
+        return hobbies
             .where((hobby) => hobby.name == 'Guitar' || hobby.name == 'Cooking')
             .toList();
       case 'Relax':
-        return hobbiesList.where((hobby) => hobby.name == 'Reading').toList();
+        return hobbies.where((hobby) => hobby.name == 'Reading').toList();
       case 'Level Up':
-        return hobbiesList.where((hobby) => hobby.progress >= 0.75).toList();
+        return hobbies.where((hobby) => hobby.progress >= 0.75).toList();
       case 'All':
       default:
-        return hobbiesList;
+        return hobbies;
     }
   }
 
-  Hobby get recommendedHobby {
-    final List<Hobby> source = filteredHobbies.isNotEmpty
-        ? filteredHobbies
-        : hobbiesList;
+  Hobby getRecommendedHobby(List<Hobby> hobbies) {
+    if (hobbies.isEmpty) {
+      throw Exception("No hobbies available to recommend");
+   }
 
-    final sorted = [...source];
+    final sorted = [...hobbies];
 
     sorted.sort((a, b) {
       final aScore = _recommendationScore(a);
@@ -101,21 +119,38 @@ class _HobbyPageState extends State<HobbyPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Hobby featured = recommendedHobby;
+    final user = Auth().currentUser;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: Column(
+          child: StreamBuilder<List<Hobby>>(
+            stream: getUserHobbies(user!.uid), 
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting){
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+              final hobbies = snapshot.data ?? [];
+              if (hobbies.isEmpty) {
+                return const Center(child: Text('No hobbies found.'));
+              }
+
+              final filteredHobbies = applyFilter(hobbies);
+              final recommendedHobby = getRecommendedHobby(filteredHobbies);
+
+              return Column(
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 20),
               Expanded(
                 child: ListView(
                   children: [
-                    _buildHappinessCard(featured),
+                    _buildHappinessCard(recommendedHobby),
                     const SizedBox(height: 16),
                     _buildFilterRow(),
                     const SizedBox(height: 18),
@@ -134,26 +169,36 @@ class _HobbyPageState extends State<HobbyPage> {
                 ),
               ),
             ],
-          ),
+          );
+            }
+            )
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         const Expanded(
           child: Text('Hobby Lobby', style: AppTextStyles.pageTitle),
         ),
-        Container(
-          width: 56,
-          height: 56,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.primary,
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+          },
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primary,
+            ),
+            child: const Icon(Icons.person, color: Colors.white, size: 30),
           ),
-          child: const Icon(Icons.person, color: Colors.white, size: 30),
         ),
       ],
     );
@@ -322,7 +367,7 @@ class _HobbyPageState extends State<HobbyPage> {
                         ),
                         child: Text(
                           'Level ${hobby.level}',
-                          style: AppTextStyles.badgeText.copyWith(fontSize: 16),
+                          style: AppTextStyles.badgeText.copyWith(fontSize: 12),
                         ),
                       ),
                     ),

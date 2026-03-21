@@ -16,92 +16,7 @@ class _HomePage extends State<HomePage> {
   List<Map<String, dynamic>> dailyTasks = [];
   List<Map<String, dynamic>> weeklyTasks = [];
 
-  @override
-  void initState() {
-    super.initState();
-    getUserHobbyTasks();
-  }
 
-  
-  void getUserHobbyTasks() async {
-    final User? user = Auth().currentUser;
-    if (user == null) return;
-
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user?.uid).get();
-    if (userDoc.exists) {
-      final userData = userDoc.data();
-      final dTasks = userData?['hobbies']?[widget.hobbyKey]?['Daily_tasks']??[];
-      final wTasks = userData?['hobbies']?[widget.hobbyKey]?['Weekly_tasks']??[];
-
-      setState(() {
-        dailyTasks = List<Map<String,dynamic>>.from(dTasks);
-        weeklyTasks = List<Map<String,dynamic>>.from(wTasks);
-      });
-    }
-  }
-
-  Future<void> addThreeTasks() async {
-  final User? user = Auth().currentUser;
-  if (user == null) return;
-
-  final timestamp = Timestamp.now();
-
-  final wTasks = [
-    {
-      'title': 'Dribble practice',
-      'description': 'Practice dribbling for 30 minutes',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Shoot hoops',
-      'description': 'Take 20 shots from free throw line',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Passing practice',
-      'description': 'Work on passing accuracy',
-      'createdAt': timestamp,
-    },
-  ];
-
-  final dTasks = [
-    {
-      'title': 'Dribble ',
-      'description': 'Practice dribbling for 30 minutes',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Shoot ',
-      'description': 'Take 20 shots from free throw line',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Passing ',
-      'description': 'Work on passing accuracy',
-      'createdAt': timestamp,
-    },
-  ];
-
-  final userDocRef = firestore.collection('users').doc(user.uid);
-
-  await userDocRef.set({
-    'hobbies': {
-      widget.hobbyKey: {
-        'WeeklyTasks': FieldValue.arrayUnion(wTasks)
-      }
-    }
-  }, SetOptions(merge: true));
-
-  await userDocRef.set({
-    'hobbies': {
-      widget.hobbyKey: {
-        'DailyTasks': FieldValue.arrayUnion(dTasks)
-      }
-    }
-  }, SetOptions(merge: true));
-
-  getUserHobbyTasks(); // Refresh the list
-}
 
   @override
   Widget build(BuildContext context) {
@@ -115,12 +30,6 @@ class _HomePage extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.hobbyKey} Tasks'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: addThreeTasks, // Add 3 tasks on button press
-          ),
-        ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: firestore.collection('users').doc(user.uid).snapshots(),

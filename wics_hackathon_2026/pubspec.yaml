@@ -1,6 +1,6 @@
 name: wics_hackathon_2026
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -14,6 +14,7 @@ dependencies:
   firebase_core: ^4.5.0
   image_picker: ^1.0.7
 
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:
@@ -35,4 +36,3 @@ flutter:
     - lib/images/tennis.png
     - lib/images/gamescene1.jpg
     - lib/images/gamescene2.jpg
-

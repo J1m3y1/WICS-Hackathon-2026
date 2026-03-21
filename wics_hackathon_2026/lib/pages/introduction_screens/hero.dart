@@ -11,7 +11,8 @@ const _morphWords = [
 
 class HeroScreen extends StatefulWidget {
   final VoidCallback onNext;
-  const HeroScreen({super.key, required this.onNext});
+  final VoidCallback? onSignIn;
+  const HeroScreen({super.key, required this.onNext, this.onSignIn});
 
   @override
   State<HeroScreen> createState() => _HeroScreenState();
@@ -206,7 +207,7 @@ class _HeroScreenState extends State<HeroScreen>
                       onTap: widget.onNext,
                     ),
                     SizedBox(height: h * 0.014),
-                    GhostButton(label: 'Sign in instead', onTap: widget.onNext),
+                    GhostButton(label: 'Sign in instead', onTap: widget.onSignIn),
                   ],
                 ),
               ),

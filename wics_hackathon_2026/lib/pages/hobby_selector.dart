@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/main_navigation.dart';
+import 'package:wics_hackathon_2026/pages/profile_screen.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
 import '../../shared/app_data.dart';
 import '../../shared/app_theme.dart';
@@ -144,7 +145,7 @@ class _HobbyPageState extends State<HobbyPage> {
 
               return Column(
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 20),
               Expanded(
                 child: ListView(
@@ -176,20 +177,28 @@ class _HobbyPageState extends State<HobbyPage> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         const Expanded(
           child: Text('Hobby Lobby', style: AppTextStyles.pageTitle),
         ),
-        Container(
-          width: 56,
-          height: 56,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.primary,
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+            );
+          },
+          child: Container(
+            width: 56,
+            height: 56,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primary,
+            ),
+            child: const Icon(Icons.person, color: Colors.white, size: 30),
           ),
-          child: const Icon(Icons.person, color: Colors.white, size: 30),
         ),
       ],
     );
@@ -358,7 +367,7 @@ class _HobbyPageState extends State<HobbyPage> {
                         ),
                         child: Text(
                           'Level ${hobby.level}',
-                          style: AppTextStyles.badgeText.copyWith(fontSize: 16),
+                          style: AppTextStyles.badgeText.copyWith(fontSize: 12),
                         ),
                       ),
                     ),

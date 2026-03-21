@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:wics_hackathon_2026/pages/login_signup.dart';
-import 'package:wics_hackathon_2026/pages/introduction_screens/hero.dart';
+import 'pages/introduction_screens/onboarding_flow.dart';
+import '/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,15 +15,21 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Builder(
-        builder: (context) => HeroScreen(
-          onNext: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const LoginPage()),
-            );
+      title: 'HobbyUp',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.textAccent),
+        scaffoldBackgroundColor: AppColors.bgPage,
+        fontFamily: 'DM Sans',
+        useMaterial3: true,
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS:     CupertinoPageTransitionsBuilder(),
           },
         ),
       ),
+      home: const OnboardingFlow(),
     );
   }
 }

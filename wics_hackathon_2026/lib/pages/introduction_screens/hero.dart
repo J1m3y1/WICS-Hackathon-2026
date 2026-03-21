@@ -62,48 +62,21 @@ class _HeroScreenState extends State<HeroScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final h = size.height;
+    final w = size.width;
+
+    final logoSize = w * 0.16;
+    final headlineFontSize = w * 0.075;
+
     return Container(
       color: AppColors.bgPage,
       child: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: w * 0.06),
           child: Column(
             children: [
-              const SizedBox(height: 32),
-
-              // Eyebrow badge
-              FadeSlideIn(
-                delay: const Duration(milliseconds: 100),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: AppColors.bgAccent,
-                        border: Border.all(color: AppColors.borderAccent),
-                        borderRadius: BorderRadius.circular(99),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _PulseDot(),
-                          const SizedBox(width: 7),
-                          const Text(
-                            'Now in early access',
-                            style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w500,
-                              color: AppColors.textAccent,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 28),
+              SizedBox(height: h * 0.04),
 
               // Logo
               FadeSlideIn(
@@ -111,21 +84,21 @@ class _HeroScreenState extends State<HeroScreen>
                 child: Column(
                   children: [
                     Container(
-                      width: 64, height: 64,
+                      width: logoSize, height: logoSize,
                       decoration: BoxDecoration(
                         color: AppColors.bgAccent,
                         border: Border.all(color: AppColors.borderAccent, width: 1.5),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(logoSize * 0.28),
                       ),
-                      child: const Center(child: Text('🌟', style: TextStyle(fontSize: 30))),
+                      child: Center(child: Text('🌟', style: TextStyle(fontSize: logoSize * 0.46))),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: h * 0.018),
                     const Text('HobbyUp', style: AppTextStyles.pageTitle),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 22),
+              SizedBox(height: h * 0.03),
 
               // Hero headline with morphing word
               FadeSlideIn(
@@ -134,10 +107,10 @@ class _HeroScreenState extends State<HeroScreen>
                   children: [
                     Text(
                       'Turn your',
-                      style: AppTextStyles.pageTitle.copyWith(fontSize: 30),
+                      style: AppTextStyles.pageTitle.copyWith(fontSize: headlineFontSize),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: h * 0.003),
                     AnimatedOpacity(
                       opacity: _wordVisible ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 260),
@@ -150,7 +123,7 @@ class _HeroScreenState extends State<HeroScreen>
                             Text(
                               _morphWords[_wordIdx],
                               style: AppTextStyles.pageTitle.copyWith(
-                                fontSize: 30,
+                                fontSize: headlineFontSize,
                                 fontStyle: FontStyle.italic,
                                 color: AppColors.textAccent,
                               ),
@@ -180,17 +153,17 @@ class _HeroScreenState extends State<HeroScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: h * 0.003),
                     Text(
                       'into a superpower',
-                      style: AppTextStyles.pageTitle.copyWith(fontSize: 30),
+                      style: AppTextStyles.pageTitle.copyWith(fontSize: headlineFontSize),
                       textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 18),
+              SizedBox(height: h * 0.025),
 
               // Subtitle
               FadeSlideIn(
@@ -202,13 +175,13 @@ class _HeroScreenState extends State<HeroScreen>
                 ),
               ),
 
-              const SizedBox(height: 28),
+              SizedBox(height: h * 0.038),
 
               // Hobby chips
               FadeSlideIn(
                 delay: const Duration(milliseconds: 480),
                 child: Wrap(
-                  spacing: 8, runSpacing: 8,
+                  spacing: w * 0.02, runSpacing: w * 0.02,
                   alignment: WrapAlignment.center,
                   children: const [
                     HobbyChip(emoji: '🏋️', label: 'Gym',    active: true),
@@ -220,7 +193,7 @@ class _HeroScreenState extends State<HeroScreen>
                 ),
               ),
 
-              const SizedBox(height: 36),
+              SizedBox(height: h * 0.05),
 
               // CTA buttons
               FadeSlideIn(
@@ -232,15 +205,13 @@ class _HeroScreenState extends State<HeroScreen>
                       dark: true,
                       onTap: widget.onNext,
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: h * 0.014),
                     GhostButton(label: 'Sign in instead', onTap: widget.onNext),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 28),
-
-              const SizedBox(height: 40),
+              SizedBox(height: h * 0.05),
             ],
           ),
         ),

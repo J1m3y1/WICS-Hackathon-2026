@@ -28,29 +28,23 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-        body: screens[myIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.cyan,
-          currentIndex: myIndex,
-          onTap: (index) {
-            setState(() {
-              myIndex = index;
-            });
-          },
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.feed),
-              label: 'Feed',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      );
-    }
+    return Scaffold(
+      body: screens[myIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.cyan,
+        currentIndex: myIndex,
+        onTap: (index) {
+          setState(() {
+            myIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.feed), label: 'Feed'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
+    );
+  }
 }

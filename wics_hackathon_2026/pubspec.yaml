@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  firebase_auth: ^6.2.0
+  cloud_firestore: ^6.1.3
+  firebase_core: ^4.5.0
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +20,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/gympost.avif
+    - assets/images/guitar.jpg
+    - assets/images/chess.avif
+    - assets/images/painting.webp

@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:wics_hackathon_2026/pages/login_signup.dart';
+import 'package:wics_hackathon_2026/services/auth.dart';
 import '../shared/app_theme.dart';
 import '../shared/setting_buttons.dart';
 
@@ -262,7 +264,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SizedBox(
       height: 58,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () async {
+          try {
+            await Auth().signOut();
+            if(mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
+                );
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Failed to sign out. Try again.'),
+                ),
+            );
+            }
+        },
         icon: const Icon(Icons.logout_rounded, color: AppColors.textPrimary),
         label: const Text("Log Out", style: AppTextStyles.badgeText),
         style: ElevatedButton.styleFrom(

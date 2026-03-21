@@ -20,37 +20,17 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
+    - assets/images/gympost.avif
+    - assets/images/guitar.jpg
+    - assets/images/chess.avif
+    - assets/images/painting.web
     - lib/images/boxing.jpg
     - lib/images/gaming.jpg
     - lib/images/gym.jpg
     - lib/images/picketball.jpg
     - lib/images/soccer.jpg
     - lib/images/tennis.png
+    - lib/images/gamescene1.jpg
+    - lib/images/gamescene2.jpg
 
-fonts:
-    - family: PlayfairDisplay
-      fonts:
-        - asset: assets/fonts/PlayfairDisplay-VariableFont_wght.ttf
-          weight: 400
-        - asset: assets/fonts/PlayfairDisplay-VariableFont_wght.ttf
-          weight: 500
-        - asset: assets/fonts/PlayfairDisplay-VariableFont_wght.ttf
-          weight: 700
-        - asset: assets/fonts/PlayfairDisplay-Italic-VariableFont_wght.ttf
-          style: italic
-        - asset: assets/fonts/PlayfairDisplay-Italic-VariableFont_wght.ttf
-          weight: 700
-          style: italic
-    - family: DM Sans
-      fonts:
-        - asset: assets/fonts/DMSans-VariableFont_opsz,wght.ttf
-          weight: 300
-        - asset: assets/fonts/DMSans-VariableFont_opsz,wght.ttf
-          weight: 400
-        - asset: assets/fonts/DMSans-VariableFont_opsz,wght.ttf
-          weight: 500
-
-      assets:
-    - assets/fonts/

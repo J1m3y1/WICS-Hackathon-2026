@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/pages/profile.dart';
 import 'package:wics_hackathon_2026/pages/home.dart';
-import 'package:wics_hackathon_2026/pages/tasks.dart';
+import 'package:wics_hackathon_2026/pages/feed.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -12,7 +12,7 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int myIndex = 0;
-  final screens = [HomePage(), TasksPage(), ProfilePage()];
+  final screens = [HomePage(), FeedPage(), ProfilePage()];
 
   @override
   Widget build(BuildContext context) {

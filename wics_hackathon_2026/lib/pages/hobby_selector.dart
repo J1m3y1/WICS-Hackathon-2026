@@ -18,6 +18,17 @@ class _HobbyPageState extends State<HobbyPage> {
 
   final List<String> filters = ['All', 'Creative', 'Relax', 'Level Up'];
   final CollectionReference users = FirebaseFirestore.instance.collection("users");
+  late Stream<List<Hobby>> _hobbyStream;
+
+  @override
+  void initState() {
+    super.initState();
+    // 2. Initialize the stream once
+    final user = Auth().currentUser;
+    if (user != null) {
+      _hobbyStream = getUserHobbies(user.uid);
+    }
+  }
 
   Stream<List<Hobby>> getUserHobbies(String userID) {
     return users.doc(userID).snapshots().map((snapshot) {
@@ -127,7 +138,7 @@ class _HobbyPageState extends State<HobbyPage> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: StreamBuilder<List<Hobby>>(
-            stream: getUserHobbies(user!.uid), 
+            stream: _hobbyStream, 
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting){
                 return const Center(child: CircularProgressIndicator());

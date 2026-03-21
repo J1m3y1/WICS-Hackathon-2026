@@ -16,66 +16,7 @@ class _HomePage extends State<HomePage> {
   List<Map<String, dynamic>> dailyTasks = [];
   List<Map<String, dynamic>> weeklyTasks = [];
 
-  Future<void> addThreeTasks() async {
-  final User? user = Auth().currentUser;
-  if (user == null) return;
 
-  final timestamp = Timestamp.now();
-
-  final wTasks = [
-    {
-      'title': 'Dribble practice',
-      'description': 'Practice dribbling for 30 minutes',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Shoot hoops',
-      'description': 'Take 20 shots from free throw line',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Passing practice',
-      'description': 'Work on passing accuracy',
-      'createdAt': timestamp,
-    },
-  ];
-
-  final dTasks = [
-    {
-      'title': 'Dribble ',
-      'description': 'Practice dribbling for 30 minutes',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Shoot ',
-      'description': 'Take 20 shots from free throw line',
-      'createdAt': timestamp,
-    },
-    {
-      'title': 'Passing ',
-      'description': 'Work on passing accuracy',
-      'createdAt': timestamp,
-    },
-  ];
-
-  final userDocRef = firestore.collection('users').doc(user.uid);
-
-  await userDocRef.set({
-    'hobbies': {
-      widget.hobbyKey: {
-        'WeeklyTasks': FieldValue.arrayUnion(wTasks)
-      }
-    }
-  }, SetOptions(merge: true));
-
-  await userDocRef.set({
-    'hobbies': {
-      widget.hobbyKey: {
-        'DailyTasks': FieldValue.arrayUnion(dTasks)
-      }
-    }
-  }, SetOptions(merge: true));
-}
 
   @override
   Widget build(BuildContext context) {
@@ -89,12 +30,6 @@ class _HomePage extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.hobbyKey} Tasks'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: addThreeTasks, // Add 3 tasks on button press
-          ),
-        ],
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: firestore.collection('users').doc(user.uid).snapshots(),

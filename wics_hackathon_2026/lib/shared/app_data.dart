@@ -18,7 +18,21 @@ class Hobby {
     required this.nextRank,
     required this.imagePath,
   });
+
+  factory Hobby.fromMap(Map<String, dynamic> infoMap, Map<String, dynamic>? hobbyData) {
+    return Hobby(
+      name: infoMap['name'] ?? '',
+      level: infoMap['level'] ?? 0,
+      progress: (infoMap['progress'] ?? 0.0).toDouble(),
+      xp: infoMap['xp'] ?? 0,
+      maxXp: infoMap['maxXp'] ?? 0,
+      currentRank: infoMap['currentRank'] ?? '',
+      nextRank: infoMap['nextRank'] ?? '',
+      imagePath: infoMap['imagePath'] ?? '',
+    );
+  }
 }
+
 
 class TaskItem {
   final String title;
@@ -32,35 +46,3 @@ class TaskItem {
   });
 }
 
-final List<Hobby> hobbiesList = [
-  Hobby(
-    name: 'Guitar',
-    level: 6,
-    progress: 0.75,
-    xp: 1800,
-    maxXp: 2000,
-    currentRank: 'Advanced Strummer',
-    nextRank: 'Master Strummer',
-    imagePath: 'lib/images/gamescene1.jpg',
-  ),
-  Hobby(
-    name: 'Reading',
-    level: 4,
-    progress: 0.60,
-    xp: 200,
-    maxXp: 300,
-    currentRank: 'Novice Reader',
-    nextRank: 'Intermediate Reader',
-    imagePath: 'lib/images/gamescene2.jpg',
-  ),
-  Hobby(
-    name: 'Cooking',
-    level: 5,
-    progress: 0.80,
-    xp: 400,
-    maxXp: 500,
-    currentRank: 'Intermediate Cook',
-    nextRank: 'Advanced Cook',
-    imagePath: 'lib/images/gamescene1.jpg',
-  ),
-];

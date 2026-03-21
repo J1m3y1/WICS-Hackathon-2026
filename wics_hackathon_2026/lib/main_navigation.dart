@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:wics_hackathon_2026/pages/add_verification.dart';
+import 'package:wics_hackathon_2026/pages/collection.dart';
 import 'package:wics_hackathon_2026/pages/home.dart';
+import 'package:wics_hackathon_2026/pages/tasks.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -10,13 +13,15 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int myIndex = 0;
-  final screens = [HomePage(),];
+  final screens = [HomePage(), TasksPage(), VerificationPage(), CollectionPage()];
 
   @override
   Widget build(BuildContext context) {
       return Scaffold(
         body: screens[myIndex],
         bottomNavigationBar: BottomNavigationBar(
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.cyan,
           currentIndex: myIndex,
           onTap: (index) {
             setState(() {

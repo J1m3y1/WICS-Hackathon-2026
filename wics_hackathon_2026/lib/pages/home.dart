@@ -16,6 +16,8 @@ class _HomePage extends State<HomePage> {
       appBar: AppBar(
         title: Text('Home'),
       ),
+      body: Container(
+      ),
     );
   }
 }

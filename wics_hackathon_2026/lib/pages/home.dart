@@ -1,156 +1,180 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
-class HobbyTask {
-  final String title;
-  final String hobby;
-  final String frequency;
-  bool isCompleted;
-
-  HobbyTask({
-    required this.title,
-    required this.hobby,
-    required this.frequency,
-    this.isCompleted = false,
-  });
-}
+import 'package:wics_hackathon_2026/services/auth.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final String hobbyKey;
+  const HomePage({super.key, required this.hobbyKey});
 
   @override
   State<HomePage> createState() => _HomePage();
 }
 
 class _HomePage extends State<HomePage> {
-  final List<HobbyTask> tasks = [
-    HobbyTask(
-      title: 'Sketch for 10 minutes',
-      hobby: 'Drawing',
-      frequency: 'Daily',
-    ),
-    HobbyTask(
-      title: 'Practice shading',
-      hobby: 'Drawing',
-      frequency: 'Daily',
-    ),
-    HobbyTask(
-      title: 'Finish one small drawing',
-      hobby: 'Drawing',
-      frequency: 'Weekly',
-    ),
-    HobbyTask(
-      title: 'Read 10 pages',
-      hobby: 'Reading',
-      frequency: 'Daily',
-    ),
-    HobbyTask(
-      title: 'Write down one quote',
-      hobby: 'Reading',
-      frequency: 'Daily',
-    ),
-    HobbyTask(
-      title: 'Finish one chapter',
-      hobby: 'Reading',
-      frequency: 'Weekly',
-    ),
-    HobbyTask(
-      title: 'Stretch for 10 minutes',
-      hobby: 'Gym',
-      frequency: 'Daily',
-    ),
-    HobbyTask(
-      title: 'Complete 3 workouts',
-      hobby: 'Gym',
-      frequency: 'Weekly',
-    ),
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> dailyTasks = [];
+  List<Map<String, dynamic>> weeklyTasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getUserHobbyTasks();
+  }
+
+  
+  void getUserHobbyTasks() async {
+    final User? user = Auth().currentUser;
+    if (user == null) return;
+
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user?.uid).get();
+    if (userDoc.exists) {
+      final userData = userDoc.data();
+      final dTasks = userData?['hobbies']?[widget.hobbyKey]?['Daily_tasks']??[];
+      final wTasks = userData?['hobbies']?[widget.hobbyKey]?['Weekly_tasks']??[];
+
+      setState(() {
+        dailyTasks = List<Map<String,dynamic>>.from(dTasks);
+        weeklyTasks = List<Map<String,dynamic>>.from(wTasks);
+      });
+    }
+  }
+
+  Future<void> addThreeTasks() async {
+  final User? user = Auth().currentUser;
+  if (user == null) return;
+
+  final timestamp = Timestamp.now();
+
+  final wTasks = [
+    {
+      'title': 'Dribble practice',
+      'description': 'Practice dribbling for 30 minutes',
+      'createdAt': timestamp,
+    },
+    {
+      'title': 'Shoot hoops',
+      'description': 'Take 20 shots from free throw line',
+      'createdAt': timestamp,
+    },
+    {
+      'title': 'Passing practice',
+      'description': 'Work on passing accuracy',
+      'createdAt': timestamp,
+    },
   ];
 
-  void toggleTask(int index, bool? value) {
-    if (value == null) return;
+  final dTasks = [
+    {
+      'title': 'Dribble ',
+      'description': 'Practice dribbling for 30 minutes',
+      'createdAt': timestamp,
+    },
+    {
+      'title': 'Shoot ',
+      'description': 'Take 20 shots from free throw line',
+      'createdAt': timestamp,
+    },
+    {
+      'title': 'Passing ',
+      'description': 'Work on passing accuracy',
+      'createdAt': timestamp,
+    },
+  ];
 
-    setState(() {
-      tasks[index].isCompleted = value;
-    });
-  }
+  final userDocRef = firestore.collection('users').doc(user.uid);
+
+  await userDocRef.set({
+    'hobbies': {
+      widget.hobbyKey: {
+        'WeeklyTasks': FieldValue.arrayUnion(wTasks)
+      }
+    }
+  }, SetOptions(merge: true));
+
+  await userDocRef.set({
+    'hobbies': {
+      widget.hobbyKey: {
+        'DailyTasks': FieldValue.arrayUnion(dTasks)
+      }
+    }
+  }, SetOptions(merge: true));
+
+  getUserHobbyTasks(); // Refresh the list
+}
 
   @override
   Widget build(BuildContext context) {
-    final incompleteTasks = tasks.where((task) => !task.isCompleted).toList();
-    final completedTasks = tasks.where((task) => task.isCompleted).toList();
+    final user = Auth().currentUser;
+    if (user == null) {
+      return Scaffold(
+        body: Center(child: Text('User not logged in')),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home'),
+        title: Text('${widget.hobbyKey} Tasks'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: addThreeTasks, // Add 3 tasks on button press
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            Text(
-              '${incompleteTasks.length} tasks left',
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 16),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: firestore.collection('users').doc(user.uid).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
+          if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
 
-            ...incompleteTasks.map((task) {
-              final index = tasks.indexOf(task);
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: Checkbox(
-                    value: task.isCompleted,
-                    onChanged: (value) => toggleTask(index, value),
-                  ),
-                  title: Text(task.title),
-                  subtitle: Text('${task.hobby} • ${task.frequency}'),
-                ),
+          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+          final weeklyTasks = List<Map<String, dynamic>>.from(
+                data['hobbies']?[widget.hobbyKey]?['WeeklyTasks'] ?? []
               );
-            }),
+          final dailyTasks = List<Map<String, dynamic>>.from(
+            data['hobbies']?[widget.hobbyKey]?['DailyTasks'] ?? []
+          );
 
-            if (completedTasks.isNotEmpty) ...[
-              const SizedBox(height: 24),
-              const Text(
-                'Completed',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 12),
+          if (weeklyTasks.isEmpty && dailyTasks.isEmpty) {
+            return Center(child: Text('No tasks for this hobby yet.'));
+          }
 
-              ...completedTasks.map((task) {
-                final index = tasks.indexOf(task);
+          final totalItems = weeklyTasks.length + dailyTasks.length + 2;
 
-                return Card(
-                  color: Colors.grey[100],
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: Checkbox(
-                      value: task.isCompleted,
-                      onChanged: (value) => toggleTask(index, value),
-                    ),
-                    title: Text(
-                      task.title,
-                      style: const TextStyle(
-                        decoration: TextDecoration.lineThrough,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    subtitle: Text(
-                      '${task.hobby} • ${task.frequency}',
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
+          return ListView.builder(
+            itemCount: totalItems,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return ListTile(
+                title: Text('Weekly Tasks', style: TextStyle(fontWeight: FontWeight.bold),),
+              );
+              }
+
+              if(index > 0 && index <= weeklyTasks.length) {
+                final task = weeklyTasks[index - 1];
+                return ListTile(
+                  title: Text(task['title']?? "No Title"),
+                  subtitle: Text(task['description']?? ""),
                 );
-              }),
-            ],
-          ],
-        ),
+              }
+
+              if (index == weeklyTasks.length + 1) {
+                return ListTile(
+                title: Text('Daily Tasks', style: TextStyle(fontWeight: FontWeight.bold),),
+              );
+              }
+
+              final task = dailyTasks[index - weeklyTasks.length - 2];
+              return ListTile(
+                title: Text(task['title']?? "No Title"),
+                subtitle: Text(task['description']?? ""),
+              );
+              
+            },
+          );
+          
+        },
       ),
     );
   }

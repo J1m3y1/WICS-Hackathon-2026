@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:wics_hackathon_2026/pages/hooby_selector.dart';
+import 'package:wics_hackathon_2026/pages/hobby_selector.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
 
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/pages/add_verification.dart';
-import 'package:wics_hackathon_2026/pages/collection.dart';
+import 'package:wics_hackathon_2026/pages/community_feed.dart';
 import 'package:wics_hackathon_2026/pages/home.dart';
 import 'package:wics_hackathon_2026/pages/tasks.dart';
 
@@ -13,7 +13,7 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int myIndex = 0;
-  final screens = [HomePage(), TasksPage(), VerificationPage(), CollectionPage()];
+  final screens = [HomePage(), TasksPage(), VerificationPage(), CommunityFeed()];
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.collections),
-              label: 'Collection',
+              label: 'Community',
             ),
           ],
         ),

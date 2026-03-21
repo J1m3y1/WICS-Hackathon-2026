@@ -20,3 +20,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/gympost.avif
+    - assets/images/guitar.jpg
+    - assets/images/chess.avif
+    - assets/images/painting.webp

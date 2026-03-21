@@ -14,7 +14,7 @@ class _CollectionPage extends State<CollectionPage> {
   Widget build(BuildContext context){
     return Scaffold(
       appBar: AppBar(
-        title: Text('Collection'),
+        title: Text('Community'),
       ),
     );
   }

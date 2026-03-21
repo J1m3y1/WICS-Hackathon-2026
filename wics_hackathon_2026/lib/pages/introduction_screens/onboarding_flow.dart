@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '/theme/app_theme.dart';
+import '../../theme/app_theme.dart';
+import '../login_signup.dart';
 import 'hero.dart';
 import 'how_it_works.dart';
-//import 'features.dart';
-//import 'task_feed.dart';
-//import 'social_feed.dart';
+import 'features.dart';
+import 'task_feed.dart';
+import 'social_feed.dart';
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
@@ -25,7 +26,26 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         duration: const Duration(milliseconds: 380),
         curve: Curves.easeInOutCubic,
       );
+    } else {
+      _goToLogin(initialIsLogin: false);
     }
+  }
+
+  void _goToLogin({bool initialIsLogin = true}) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => LoginPage(initialIsLogin: initialIsLogin),
+      ),
+    );
+  }
+
+  void _goToPage(int index) {
+    _pageCtrl.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 380),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   @override
@@ -44,17 +64,17 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               physics: const BouncingScrollPhysics(),
               onPageChanged: (i) => setState(() => _current = i),
               children: [
-                HeroScreen(onNext: _next),
+                HeroScreen(onNext: _next, onSignIn: () => _goToLogin()),
                 HowItWorksScreen(onNext: _next),
-                //FeaturesScreen(onNext: _next),
-                //TaskFeedScreen(onNext: _next),
-                //SocialFeedScreen(onNext: _next),
+                FeaturesScreen(onNext: _next),
+                TaskFeedScreen(onNext: _next),
+                SocialFeedScreen(onNext: _next, onSignIn: () => _goToLogin()),
               ],
             ),
           ),
 
           // Bottom dot indicator + nav bar
-          _BottomNav(current: _current, total: _pageCount),
+          _BottomNav(current: _current, total: _pageCount, onDotTap: _goToPage),
         ],
       ),
     );
@@ -64,7 +84,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 class _BottomNav extends StatelessWidget {
   final int current;
   final int total;
-  const _BottomNav({required this.current, required this.total});
+  final ValueChanged<int> onDotTap;
+  const _BottomNav({required this.current, required this.total, required this.onDotTap});
 
   @override
   Widget build(BuildContext context) {
@@ -80,15 +101,21 @@ class _BottomNav extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(total, (i) {
             final active = i == current;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeInOutCubic,
-              margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: active ? 22 : 7,
-              height: 7,
-              decoration: BoxDecoration(
-                color: active ? AppColors.textAccent : AppColors.border,
-                borderRadius: BorderRadius.circular(4),
+            return GestureDetector(
+              onTap: () => onDotTap(i),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOutCubic,
+                  width: active ? 22 : 7,
+                  height: 7,
+                  decoration: BoxDecoration(
+                    color: active ? AppColors.textAccent : AppColors.border,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
               ),
             );
           }),

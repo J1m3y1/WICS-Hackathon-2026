@@ -4,6 +4,62 @@ import 'package:wics_hackathon_2026/services/auth.dart';
 import 'package:wics_hackathon_2026/shared/app_data.dart';
 import 'create_post.dart';
 import 'dart:io';
+import 'package:wics_hackathon_2026/shared/app_theme.dart';
+
+class HobbyPost {
+  final String username;
+  final String hobby;
+  final int level;
+  final int xp;
+  final String timeAgo;
+  final String? imagePath;
+  final bool isFile;
+
+  const HobbyPost({
+    required this.username,
+    required this.hobby,
+    required this.level,
+    required this.xp,
+    required this.timeAgo,
+    this.imagePath,
+    this.isFile = false,
+  });
+}
+
+final List<HobbyPost> samplePosts = [
+  HobbyPost(
+    username: 'alex',
+    hobby: 'Gym',
+    level: 5,
+    xp: 80,
+    timeAgo: '2 min ago',
+    imagePath: 'assets/images/gympost.avif',
+  ),
+  HobbyPost(
+    username: 'mia',
+    hobby: 'Guitar',
+    level: 2,
+    xp: 40,
+    timeAgo: '18 min ago',
+    imagePath: 'assets/images/guitar.jpg',
+  ),
+  HobbyPost(
+    username: 'jordan',
+    hobby: 'Painting',
+    level: 3,
+    xp: 60,
+    timeAgo: '45 min ago',
+    imagePath: 'assets/images/painting.webp',
+  ),
+  HobbyPost(
+    username: 'sam',
+    hobby: 'Chess',
+    level: 7,
+    xp: 120,
+    timeAgo: '1 hr ago',
+    imagePath: 'assets/images/chess.avif',
+  ),
+];
 
 class CommunityFeed extends StatefulWidget {
   final String hobbyKey;
@@ -12,7 +68,6 @@ class CommunityFeed extends StatefulWidget {
   @override
   State<CommunityFeed> createState() => _CommunityFeedState();
 }
-
 
 class _CommunityFeedState extends State<CommunityFeed> {
   late Stream<List<HobbyPost>> _postStream;
@@ -60,9 +115,9 @@ class _CommunityFeedState extends State<CommunityFeed> {
   Widget build(BuildContext context) {
     final user = Auth().currentUser;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: _accentColor,
+        backgroundColor: AppColors.primary,
         onPressed: () async {
           await Navigator.push(
             context,
@@ -80,15 +135,7 @@ class _CommunityFeedState extends State<CommunityFeed> {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 12),
-              child: Text(
-                'Community',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              child: Text('Community', style: AppTextStyles.pageTitle),
             ),
 
             Expanded(
@@ -131,27 +178,19 @@ class _CommunityFeedState extends State<CommunityFeed> {
 
 class _PostCard extends StatelessWidget {
   final HobbyPost post;
-  final Color accentColor;
-  final Color subtleText;
-  final Color borderColor;
 
-  const _PostCard({
-    required this.post,
-    required this.accentColor,
-    required this.subtleText,
-    required this.borderColor,
-  });
+  const _PostCard({required this.post});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: 1.5),
+        border: Border.all(color: AppColors.border, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withAlpha(20),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -180,19 +219,16 @@ class _PostCard extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: '@${post.username} ',
-                        style: TextStyle(
-                          color: subtleText,
-                          fontWeight: FontWeight.w400,
-                        ),
+                        style: AppTextStyles.subText,
                       ),
                       const TextSpan(
                         text: 'completed ',
-                        style: TextStyle(color: Color(0xFFAAAAAA)),
+                        style: AppTextStyles.subText,
                       ),
                       TextSpan(
                         text: '${post.hobby} · Lvl ${post.level}',
-                        style: TextStyle(
-                          color: accentColor,
+                        style: const TextStyle(
+                          color: AppColors.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -203,11 +239,7 @@ class _PostCard extends StatelessWidget {
 
                 Text(
                   '${post.timeAgo} · +${post.xp} XP',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: subtleText,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: AppTextStyles.subText,
                 ),
               ],
             ),
@@ -216,4 +248,15 @@ class _PostCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// Entry point
+
+void main() {
+  runApp(
+    const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: CommunityFeed(hobbyKey: ''),
+    ),
+  );
 }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '/theme/app_theme.dart';
 import '/theme/app_text.dart';
 
-//XP Progress Bar
+
 class XpBar extends StatefulWidget {
-  final double percent; // 0.0 – 1.0
+  final double percent; 
   final double height;
 
   const XpBar({super.key, required this.percent, this.height = 5});

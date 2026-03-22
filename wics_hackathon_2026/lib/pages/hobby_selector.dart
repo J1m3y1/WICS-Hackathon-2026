@@ -23,7 +23,6 @@ class _HobbyPageState extends State<HobbyPage> {
   @override
   void initState() {
     super.initState();
-    // 2. Initialize the stream once
     final user = Auth().currentUser;
     if (user != null) {
       _hobbyStream = getUserHobbies(user.uid);
@@ -130,7 +129,6 @@ class _HobbyPageState extends State<HobbyPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Auth().currentUser;
 
     return Scaffold(
       backgroundColor: AppColors.background,

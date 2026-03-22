@@ -1,17 +1,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '/theme/app_theme.dart';
-import '/theme/app_text.dart';
-import '/widgets/shared_widgets.dart';
+import '../../shared/app_theme.dart';
+import '../../widgets/shared_widgets.dart';
 
 const _morphWords = [
-  'hobbies', 'guitar', 'cooking', 'fitness',
-  'chess', 'photography', 'yoga', 'coding', 'painting',
+  'hobbies',
+  'guitar',
+  'cooking',
+  'fitness',
+  'chess',
+  'photography',
+  'yoga',
+  'coding',
+  'painting',
 ];
 
 class HeroScreen extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback? onSignIn;
+
   const HeroScreen({super.key, required this.onNext, this.onSignIn});
 
   @override
@@ -30,17 +37,26 @@ class _HeroScreenState extends State<HeroScreen>
   @override
   void initState() {
     super.initState();
+
     _underlineCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _underline = CurvedAnimation(parent: _underlineCtrl, curve: Curves.easeOutCubic);
+
+    _underline = CurvedAnimation(
+      parent: _underlineCtrl,
+      curve: Curves.easeOutCubic,
+    );
+
     Future.delayed(const Duration(milliseconds: 900), () {
       if (mounted) _underlineCtrl.forward();
     });
+
     _timer = Timer.periodic(const Duration(milliseconds: 2600), (_) {
       if (!mounted) return;
+
       setState(() => _wordVisible = false);
+
       Future.delayed(const Duration(milliseconds: 280), () {
         if (!mounted) return;
         setState(() {
@@ -75,18 +91,28 @@ class _HeroScreenState extends State<HeroScreen>
           child: Column(
             children: [
               SizedBox(height: h * 0.04),
+
               FadeSlideIn(
                 delay: const Duration(milliseconds: 200),
                 child: Column(
                   children: [
                     Container(
-                      width: logoSize, height: logoSize,
+                      width: logoSize,
+                      height: logoSize,
                       decoration: BoxDecoration(
                         color: AppColors.bgAccent,
-                        border: Border.all(color: AppColors.borderAccent, width: 1.5),
+                        border: Border.all(
+                          color: AppColors.borderAccent,
+                          width: 1.5,
+                        ),
                         borderRadius: BorderRadius.circular(logoSize * 0.28),
                       ),
-                      child: Center(child: Text('🌟', style: TextStyle(fontSize: logoSize * 0.46))),
+                      child: Center(
+                        child: Text(
+                          '🌟',
+                          style: TextStyle(fontSize: logoSize * 0.46),
+                        ),
+                      ),
                     ),
                     SizedBox(height: h * 0.018),
                     const Text('HobbyUp', style: AppTextStyles.pageTitle),
@@ -95,13 +121,16 @@ class _HeroScreenState extends State<HeroScreen>
               ),
 
               SizedBox(height: h * 0.03),
+
               FadeSlideIn(
                 delay: const Duration(milliseconds: 320),
                 child: Column(
                   children: [
                     Text(
                       'Turn your',
-                      style: AppTextStyles.pageTitle.copyWith(fontSize: headlineFontSize),
+                      style: AppTextStyles.pageTitle.copyWith(
+                        fontSize: headlineFontSize,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: h * 0.003),
@@ -109,7 +138,9 @@ class _HeroScreenState extends State<HeroScreen>
                       opacity: _wordVisible ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 260),
                       child: AnimatedSlide(
-                        offset: _wordVisible ? Offset.zero : const Offset(0, 0.08),
+                        offset: _wordVisible
+                            ? Offset.zero
+                            : const Offset(0, 0.08),
                         duration: const Duration(milliseconds: 260),
                         child: Stack(
                           clipBehavior: Clip.none,
@@ -124,7 +155,9 @@ class _HeroScreenState extends State<HeroScreen>
                               textAlign: TextAlign.center,
                             ),
                             Positioned(
-                              bottom: -4, left: 0, right: 0,
+                              bottom: -4,
+                              left: 0,
+                              right: 0,
                               child: AnimatedBuilder(
                                 animation: _underline,
                                 builder: (_, __) => FractionallySizedBox(
@@ -134,7 +167,10 @@ class _HeroScreenState extends State<HeroScreen>
                                     height: 3,
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [AppColors.xpStart, AppColors.xpEnd],
+                                        colors: [
+                                          AppColors.xpStart,
+                                          AppColors.xpEnd,
+                                        ],
                                       ),
                                       borderRadius: BorderRadius.circular(2),
                                     ),
@@ -149,7 +185,9 @@ class _HeroScreenState extends State<HeroScreen>
                     SizedBox(height: h * 0.003),
                     Text(
                       'into a superpower',
-                      style: AppTextStyles.pageTitle.copyWith(fontSize: headlineFontSize),
+                      style: AppTextStyles.pageTitle.copyWith(
+                        fontSize: headlineFontSize,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -168,17 +206,19 @@ class _HeroScreenState extends State<HeroScreen>
               ),
 
               SizedBox(height: h * 0.038),
+
               FadeSlideIn(
                 delay: const Duration(milliseconds: 480),
                 child: Wrap(
-                  spacing: w * 0.02, runSpacing: w * 0.02,
+                  spacing: w * 0.02,
+                  runSpacing: w * 0.02,
                   alignment: WrapAlignment.center,
                   children: const [
-                    HobbyChip(emoji: '🏋️', label: 'Gym',    active: true),
+                    HobbyChip(emoji: '🏋️', label: 'Gym', active: true),
                     HobbyChip(emoji: '🎸', label: 'Guitar', active: false),
-                    HobbyChip(emoji: '📸', label: 'Photo',  active: true),
-                    HobbyChip(emoji: '♟',  label: 'Chess',  active: false),
-                    HobbyChip(emoji: '🍳', label: 'Cook',   active: true),
+                    HobbyChip(emoji: '📸', label: 'Photo', active: true),
+                    HobbyChip(emoji: '♟', label: 'Chess', active: false),
+                    HobbyChip(emoji: '🍳', label: 'Cook', active: true),
                   ],
                 ),
               ),
@@ -195,7 +235,10 @@ class _HeroScreenState extends State<HeroScreen>
                       onTap: widget.onNext,
                     ),
                     SizedBox(height: h * 0.014),
-                    GhostButton(label: 'Sign in instead', onTap: widget.onSignIn),
+                    GhostButton(
+                      label: 'Sign in instead',
+                      onTap: widget.onSignIn,
+                    ),
                   ],
                 ),
               ),
@@ -208,45 +251,3 @@ class _HeroScreenState extends State<HeroScreen>
     );
   }
 }
-
-class _PulseDot extends StatefulWidget {
-  @override
-  State<_PulseDot> createState() => _PulseDotState();
-}
-
-class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1400))
-      ..repeat(reverse: true);
-    _scale = Tween<double>(begin: 1, end: 1.5)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
-
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _scale,
-    builder: (_, __) => Transform.scale(
-      scale: _scale.value,
-      child: Container(
-        width: 6, height: 6,
-        decoration: const BoxDecoration(
-          color: AppColors.xpEnd,
-          shape: BoxShape.circle,
-        ),
-      ),
-    ),
-  );
-}
-
-
-
-
-

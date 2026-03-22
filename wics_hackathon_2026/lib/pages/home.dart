@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
+import 'package:wics_hackathon_2026/shared/app_theme.dart';
 
 class HomePage extends StatefulWidget {
   final String hobbyKey;
@@ -22,7 +23,6 @@ class _HomePage extends State<HomePage> {
     getUserHobbyTasks();
   }
 
-  
   void getUserHobbyTasks() async {
   final User? user = Auth().currentUser;
   if (user == null) return;
@@ -66,7 +66,10 @@ class _HomePage extends State<HomePage> {
     final user = Auth().currentUser;
     if (user == null) {
       return Scaffold(
-        body: Center(child: Text('User not logged in')),
+        backgroundColor: AppColors.background,
+        body: const Center(
+          child: Text('User not logged in', style: AppTextStyles.body),
+        ),
       );
     }
 
@@ -88,9 +91,36 @@ class _HomePage extends State<HomePage> {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
 
+    final weeklyStream = firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('hobbies')
+        .doc(widget.hobbyKey)
+        .collection('WeeklyTasks')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+
+    final dailyStream = firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('hobbies')
+        .doc(widget.hobbyKey)
+        .collection('DailyTasks')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('${widget.hobbyKey} Tasks'),
+        backgroundColor: AppColors.background,
+        surfaceTintColor: AppColors.background,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        title: Text(
+          '${widget.hobbyKey} Tasks',
+          style: AppTextStyles.pageTitle.copyWith(fontSize: 22),
+        ),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: weeklyStream,
@@ -107,6 +137,42 @@ class _HomePage extends State<HomePage> {
               if(weeklyTasks.isEmpty && dailyTasks.isEmpty) {
                 return Center(child: Text('No tasks for this hobby yet.'));
               }
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: firestore.collection('users').doc(user.uid).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: AppTextStyles.body,
+              ),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.secondary),
+            );
+          }
+
+          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+
+          final weeklyTasks = List<Map<String, dynamic>>.from(
+            data['hobbies']?[widget.hobbyKey]?['WeeklyTasks'] ?? [],
+          );
+
+          final dailyTasks = List<Map<String, dynamic>>.from(
+            data['hobbies']?[widget.hobbyKey]?['DailyTasks'] ?? [],
+          );
+
+          if (weeklyTasks.isEmpty && dailyTasks.isEmpty) {
+            return const Center(
+              child: Text(
+                'No tasks for this hobby yet.',
+                style: AppTextStyles.body,
+              ),
+            );
+          }
 
               final totalItems = weeklyTasks.length + dailyTasks.length + 2;
 
@@ -147,9 +213,10 @@ class _HomePage extends State<HomePage> {
                   }
 
                   if (index == weeklyTasks.length + 1) {
-                    return ListTile(
-                    title: Text('Daily Tasks', style: TextStyle(fontWeight: FontWeight.bold),),
-                  );
+                    return const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text('Daily Tasks', style: AppTextStyles.sectionTitle),
+                    );
                   }
 
                   final dailyIndex = index - weeklyTasks.length - 2;

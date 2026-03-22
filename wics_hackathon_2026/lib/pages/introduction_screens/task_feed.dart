@@ -1,16 +1,34 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
-import '../../theme/app_text.dart';
+import '../../shared/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 
 const _tasks = [
-  (emoji: '🏋️', title: '30 min cardio session',         hobby: 'Gym',         mins: 30, xp: 80),
-  (emoji: '🎸', title: 'Practice G major transitions',  hobby: 'Guitar',      mins: 15, xp: 45),
-  (emoji: '📸', title: 'Golden hour outdoor shoot',     hobby: 'Photography', mins: 45, xp: 60),
+  (
+    emoji: '🏋️',
+    title: '30 min cardio session',
+    hobby: 'Gym',
+    mins: 30,
+    xp: 80,
+  ),
+  (
+    emoji: '🎸',
+    title: 'Practice G major transitions',
+    hobby: 'Guitar',
+    mins: 15,
+    xp: 45,
+  ),
+  (
+    emoji: '📸',
+    title: 'Golden hour outdoor shoot',
+    hobby: 'Photography',
+    mins: 45,
+    xp: 60,
+  ),
 ];
 
 class TaskFeedScreen extends StatefulWidget {
   final VoidCallback onNext;
+
   const TaskFeedScreen({super.key, required this.onNext});
 
   @override
@@ -35,17 +53,25 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
   }
 
   @override
-  void dispose() { _checkCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _checkCtrl.dispose();
+    super.dispose();
+  }
 
   void _onComplete() {
     setState(() => _completed = true);
     _checkCtrl.forward();
+
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (!mounted) return;
       _checkCtrl.reverse();
+
       Future.delayed(const Duration(milliseconds: 300), () {
         if (!mounted) return;
-        setState(() { _completed = false; _dragY = 0; });
+        setState(() {
+          _completed = false;
+          _dragY = 0;
+        });
       });
     });
   }
@@ -66,13 +92,11 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                   tag: 'Task Engine',
                   heading: 'Tasks that fit',
                   italic: 'your day',
-                  subtitle: 'Swipe the top card up to complete, or down to skip.',
+                  subtitle:
+                      'Swipe the top card up to complete, or down to skip.',
                 ),
               ),
-
               const SizedBox(height: 28),
-
-
               FadeSlideIn(
                 delay: const Duration(milliseconds: 200),
                 child: SizedBox(
@@ -81,31 +105,36 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                     clipBehavior: Clip.none,
                     alignment: Alignment.topCenter,
                     children: [
-                      ...[2, 1].map((depth) => Positioned(
-                        top: depth * 6.0,
-                        left: depth * 5.0,
-                        right: depth * 5.0,
-                        child: Opacity(
-                          opacity: 0.35 + depth * 0.2,
-                          child: Transform.scale(
-                            scale: 1 - depth * 0.03,
-                            alignment: Alignment.topCenter,
-                            child: _TaskCardContent(
-                              task: _tasks[depth],
-                              isTop: false,
+                      ...[2, 1].map(
+                        (depth) => Positioned(
+                          top: depth * 6.0,
+                          left: depth * 5.0,
+                          right: depth * 5.0,
+                          child: Opacity(
+                            opacity: 0.35 + depth * 0.2,
+                            child: Transform.scale(
+                              scale: 1 - depth * 0.03,
+                              alignment: Alignment.topCenter,
+                              child: _TaskCardContent(
+                                task: _tasks[depth],
+                                isTop: false,
+                              ),
                             ),
                           ),
                         ),
-                      )),
-
+                      ),
                       Positioned(
-                        top: 0, left: 0, right: 0,
+                        top: 0,
+                        left: 0,
+                        right: 0,
                         child: GestureDetector(
                           onVerticalDragUpdate: (d) {
                             if (_completed) return;
-                            setState(() => _dragY = d.localPosition.dy < 0
-                                ? d.localPosition.dy
-                                : d.localPosition.dy * 0.2);
+                            setState(() {
+                              _dragY = d.localPosition.dy < 0
+                                  ? d.localPosition.dy
+                                  : d.localPosition.dy * 0.2;
+                            });
                           },
                           onVerticalDragEnd: (d) {
                             if (_completed) return;
@@ -137,9 +166,7 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 16),
-
               FadeSlideIn(
                 delay: const Duration(milliseconds: 320),
                 child: Center(
@@ -149,14 +176,14 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
               FadeSlideIn(
                 delay: const Duration(milliseconds: 380),
                 child: GestureDetector(
                   onTap: _completed ? null : _onComplete,
                   child: Container(
-                    width: double.infinity, height: 44,
+                    width: double.infinity,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: AppColors.bgSurface,
                       border: Border.all(color: AppColors.border),
@@ -171,12 +198,13 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
               FadeSlideIn(
                 delay: const Duration(milliseconds: 440),
-                child: PrimaryButton(label: 'See community feed →', onTap: widget.onNext),
+                child: PrimaryButton(
+                  label: 'See community feed →',
+                  onTap: widget.onNext,
+                ),
               ),
             ],
           ),
@@ -211,7 +239,13 @@ class _TaskCardContent extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: isTop
-            ? [BoxShadow(color: AppColors.xpStart.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 4))]
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.12),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ]
             : null,
       ),
       child: completed
@@ -221,14 +255,25 @@ class _TaskCardContent extends StatelessWidget {
                 const SizedBox(height: 16),
                 ScaleTransition(
                   scale: checkScale!,
-                  child: const Text('✓', style: TextStyle(fontSize: 32, color: AppColors.textAccent)),
+                  child: const Text(
+                    '✓',
+                    style: TextStyle(fontSize: 32, color: AppColors.textAccent),
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text('Task completed!',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textAccent)),
+                const Text(
+                  'Task completed!',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textAccent,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                const Text('+80 XP earned 🎉',
-                    style: TextStyle(fontSize: 12, color: AppColors.textTertiary)),
+                const Text(
+                  '+80 XP earned 🎉',
+                  style: TextStyle(fontSize: 12, color: AppColors.textTertiary),
+                ),
                 const SizedBox(height: 16),
               ],
             )
@@ -242,10 +287,12 @@ class _TaskCardContent extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(task.title,
-                              style: AppTextStyles.cardTitle,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
+                          Text(
+                            task.title,
+                            style: AppTextStyles.cardTitle,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             '${task.emoji} ${task.hobby} · ~${task.mins} min',
@@ -260,13 +307,19 @@ class _TaskCardContent extends StatelessWidget {
                 ),
                 if (isTop) ...[
                   const SizedBox(height: 12),
-                  Divider(height: 1, color: AppColors.border),
+                  const Divider(height: 1, color: AppColors.border),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('↑ complete', style: AppTextStyles.label.copyWith(fontSize: 10)),
-                      Text('↓ skip', style: AppTextStyles.label.copyWith(fontSize: 10)),
+                      Text(
+                        '↑ complete',
+                        style: AppTextStyles.label.copyWith(fontSize: 10),
+                      ),
+                      Text(
+                        '↓ skip',
+                        style: AppTextStyles.label.copyWith(fontSize: 10),
+                      ),
                     ],
                   ),
                 ],

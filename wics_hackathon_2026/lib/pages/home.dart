@@ -15,7 +15,29 @@ class _HomePage extends State<HomePage> {
   List<Map<String, dynamic>> dailyTasks = [];
   List<Map<String, dynamic>> weeklyTasks = [];
 
+  @override
+  void initState() {
+    super.initState();
+    getUserHobbyTasks();
+  }
 
+  
+  void getUserHobbyTasks() async {
+    final User? user = Auth().currentUser;
+    if (user == null) return;
+
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user?.uid).get();
+    if (userDoc.exists) {
+      final userData = userDoc.data();
+      final dTasks = userData?['hobbies']?[widget.hobbyKey]?['Daily_tasks']??[];
+      final wTasks = userData?['hobbies']?[widget.hobbyKey]?['Weekly_tasks']??[];
+
+      setState(() {
+        dailyTasks = List<Map<String,dynamic>>.from(dTasks);
+        weeklyTasks = List<Map<String,dynamic>>.from(wTasks);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,21 +71,36 @@ class _HomePage extends State<HomePage> {
           }
 
           final totalItems = weeklyTasks.length + dailyTasks.length + 2;
-
+          
           return ListView.builder(
             itemCount: totalItems,
             itemBuilder: (context, index) {
               if (index == 0) {
-                return ListTile(
+                return const ListTile(
                 title: Text('Weekly Tasks', style: TextStyle(fontWeight: FontWeight.bold),),
               );
               }
 
               if(index > 0 && index <= weeklyTasks.length) {
                 final task = weeklyTasks[index - 1];
+                task['completed'] = task['completed'] ?? false;
+                
                 return ListTile(
-                  title: Text(task['title']?? "No Title"),
+                  onTap: () async {
+                    setState((){
+                      task['completed'] = !task['completed'];
+                      });
+                      await firestore.collection('users').doc(user.uid).update({
+                       'hobbies.${widget.hobbyKey}.WeeklyTasks': weeklyTasks,
+                    });
+                  },
+                  title: Text(task['title']?? "No Title",
+                  style: TextStyle(color: task['completed'] ? Colors.grey : Colors.black),
+                ),
                   subtitle: Text(task['description']?? ""),
+                  trailing: task['completed'] 
+                  ? const Icon(Icons.check, color: Colors.green) 
+                  :null,
                 );
               }
 
@@ -73,10 +110,26 @@ class _HomePage extends State<HomePage> {
               );
               }
 
-              final task = dailyTasks[index - weeklyTasks.length - 2];
+              final dailyIndex = index - weeklyTasks.length - 2;
+              final task = dailyTasks[dailyIndex];
+              task['completed'] = task['completed'] ?? false;
+              
               return ListTile(
-                title: Text(task['title']?? "No Title"),
+                onTap: () async {
+                  setState((){
+                    task['completed'] = !task['completed'];
+                    });
+                    await firestore.collection('users').doc(user.uid).update({
+                     'hobbies.${widget.hobbyKey}.DailyTasks': dailyTasks,
+                  });
+                },
+                title: Text(task['title']?? "No Title", style: TextStyle(color: task['completed'] ? Colors.grey : Colors.black),
+                
+                ),
                 subtitle: Text(task['description']?? ""),
+                trailing: task['completed'] 
+                  ? const Icon(Icons.check, color: Colors.green)
+                  :null,
               );
               
             },

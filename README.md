@@ -63,6 +63,7 @@ Test Account:
 Email: tom1@gmail.com
 Password: TOMTOM
 
+Use the main branch for the test branch
 
 
 ### Downloading Dependencies

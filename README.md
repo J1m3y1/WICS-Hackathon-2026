@@ -57,6 +57,10 @@ Medium Phone 36.1
 
 Upload the fire base API key under the app directory 
 
+test account: 
+email: tom1@gmail.com
+password: TOMTOM
+
 
 
 ### Downloading Dependencies

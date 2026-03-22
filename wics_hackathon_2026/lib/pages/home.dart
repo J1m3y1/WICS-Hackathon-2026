@@ -218,6 +218,129 @@ class _HomePage extends State<HomePage> {
     );
   }
 
+  Future<bool> _showCompleteTaskDialog({
+    required String title,
+    required String description,
+  }) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.55),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.18),
+                  blurRadius: 22,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary.withValues(alpha: 0.16),
+                    border: Border.all(color: AppColors.secondary, width: 2),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.secondary,
+                    size: 38,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Mark task complete?',
+                  style: AppTextStyles.pageTitle.copyWith(
+                    fontSize: 24,
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  title,
+                  style: AppTextStyles.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (description.trim().isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    description,
+                    style: AppTextStyles.subText.copyWith(height: 1.45),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+                const SizedBox(height: 20),
+                Text(
+                  'You’ll earn progress toward your next rank.',
+                  style: AppTextStyles.subText.copyWith(
+                    color: AppColors.secondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 22),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: AppColors.border),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text('Not yet', style: AppTextStyles.body),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        label: const Text('Yes, completed'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    return result ?? false;
+  }
+
   Future<void> _toggleTaskAndUpdateProgress({
     required User user,
     required List<Map<String, dynamic>> tasks,
@@ -236,12 +359,24 @@ class _HomePage extends State<HomePage> {
     final updatedTask = Map<String, dynamic>.from(updatedTasks[index]);
 
     final bool wasCompleted = updatedTask['completed'] ?? false;
-    final bool isNowCompleted = !wasCompleted;
 
-    updatedTask['completed'] = isNowCompleted;
+    if (wasCompleted) {
+      return;
+    }
+
+    final bool confirmed = await _showCompleteTaskDialog(
+      title: updatedTask['title'] ?? 'Complete task',
+      description: updatedTask['description'] ?? '',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    updatedTask['completed'] = true;
     updatedTasks[index] = updatedTask;
 
-    final int xpChange = isNowCompleted ? 100 : -100;
+    const int xpChange = 100;
 
     final int oldLevel = currentInfo['level'] ?? 1;
 
@@ -260,7 +395,7 @@ class _HomePage extends State<HomePage> {
 
     if (!mounted) return;
 
-    if (isNowCompleted && newLevel > oldLevel) {
+    if (newLevel > oldLevel) {
       await _showRankUpDialog(
         hobbyName: widget.hobbyKey,
         newLevel: newLevel,

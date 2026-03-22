@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'pages/introduction_screens/onboarding_flow.dart';
+import 'package:wics_hackathon_2026/pages/login_signup.dart';
 import '/theme/app_theme.dart';
 
 void main() async {
@@ -30,7 +30,7 @@ class MainApp extends StatelessWidget {
           },
         ),
       ),
-      home: const OnboardingFlow(),
+      home: const LoginPage(),
     );
   }
 }

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/pages/hobby_selector.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
-import 'introduction_screens/onboarding_flow.dart';
 import '../shared/app_theme.dart';
 import '../widgets/shared_widgets.dart';
 
@@ -234,32 +233,6 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              FadeSlideIn(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const OnboardingFlow()),
-                    );
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        size: 14,
-                        color: AppColors.textSecondary,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Back',
-                        style: AppTextStyles.subText.copyWith(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
               const SizedBox(height: 26),
 
               FadeSlideIn(

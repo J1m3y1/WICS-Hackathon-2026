@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'create_post.dart';
 import 'dart:io';
-
-// Data Model
+import 'package:wics_hackathon_2026/shared/app_theme.dart';
 
 class HobbyPost {
   final String username;
@@ -23,8 +22,6 @@ class HobbyPost {
     this.isFile = false,
   });
 }
-
-// Sample Data
 
 final List<HobbyPost> samplePosts = [
   HobbyPost(
@@ -61,8 +58,6 @@ final List<HobbyPost> samplePosts = [
   ),
 ];
 
-// Main Widget
-
 class CommunityFeed extends StatefulWidget {
   final String hobbyKey;
   const CommunityFeed({super.key, required this.hobbyKey});
@@ -71,13 +66,8 @@ class CommunityFeed extends StatefulWidget {
   State<CommunityFeed> createState() => _CommunityFeedState();
 }
 
-
 class _CommunityFeedState extends State<CommunityFeed> {
   late List<HobbyPost> _posts;
-
-  static const Color _accentColor = Color(0xFFC47A20);
-  static const Color _subtleText = Color(0xFFAAAAAA);
-  static const Color _borderColor = Color(0xFFEDE9DF);
 
   @override
   void initState() {
@@ -88,9 +78,9 @@ class _CommunityFeedState extends State<CommunityFeed> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: _accentColor,
+        backgroundColor: AppColors.primary,
         onPressed: () async {
           final result = await Navigator.push(
             context,
@@ -121,34 +111,21 @@ class _CommunityFeedState extends State<CommunityFeed> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 20, 20, 12),
-              child: Text(
-                'Community',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              child: Text('Community', style: AppTextStyles.pageTitle),
             ),
 
-            // Feed
             Expanded(
               child: ListView.separated(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 itemCount: _posts.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
-                  return _PostCard(
-                    post: _posts[index],
-                    accentColor: _accentColor,
-                    subtleText: _subtleText,
-                    borderColor: _borderColor,
-                  );
+                  return _PostCard(post: _posts[index]);
                 },
               ),
             ),
@@ -159,30 +136,21 @@ class _CommunityFeedState extends State<CommunityFeed> {
   }
 }
 
-// Post Card
 class _PostCard extends StatelessWidget {
   final HobbyPost post;
-  final Color accentColor;
-  final Color subtleText;
-  final Color borderColor;
 
-  const _PostCard({
-    required this.post,
-    required this.accentColor,
-    required this.subtleText,
-    required this.borderColor,
-  });
+  const _PostCard({required this.post});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: 1.5),
+        border: Border.all(color: AppColors.border, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withAlpha(20),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -192,7 +160,6 @@ class _PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Banner image
           AspectRatio(
             aspectRatio: 1 / 1,
             child: post.isFile
@@ -200,32 +167,27 @@ class _PostCard extends StatelessWidget {
                 : Image.asset(post.imagePath!, fit: BoxFit.cover),
           ),
 
-          // Info row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Username + hobby badge
                 RichText(
                   text: TextSpan(
                     style: const TextStyle(fontSize: 15),
                     children: [
                       TextSpan(
                         text: '@${post.username} ',
-                        style: TextStyle(
-                          color: subtleText,
-                          fontWeight: FontWeight.w400,
-                        ),
+                        style: AppTextStyles.subText,
                       ),
                       const TextSpan(
                         text: 'completed ',
-                        style: TextStyle(color: Color(0xFFAAAAAA)),
+                        style: AppTextStyles.subText,
                       ),
                       TextSpan(
                         text: '${post.hobby} · Lvl ${post.level}',
-                        style: TextStyle(
-                          color: accentColor,
+                        style: const TextStyle(
+                          color: AppColors.primary,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -234,14 +196,9 @@ class _PostCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
 
-                // Time + XP
                 Text(
                   '${post.timeAgo} · +${post.xp} XP',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: subtleText,
-                    fontWeight: FontWeight.w400,
-                  ),
+                  style: AppTextStyles.subText,
                 ),
               ],
             ),
@@ -251,8 +208,6 @@ class _PostCard extends StatelessWidget {
     );
   }
 }
-
-// Entry point
 
 void main() {
   runApp(

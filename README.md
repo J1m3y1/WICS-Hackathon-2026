@@ -55,7 +55,13 @@ Medium Phone 36.1
   "configuration_version": "1"
 }ing google-services.json…]()
 
-Upload the fire base API key under the app directory 
+                ^^^
+The goooge-services.json file should look like above
+Upload the fire base API key/google-service-json file under the app directory 
+
+Test Account:
+Email: tom1@gmail.com
+Password: TOMTOM
 
 
 

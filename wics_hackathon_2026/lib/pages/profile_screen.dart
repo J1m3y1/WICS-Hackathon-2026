@@ -263,11 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: const CircleAvatar(
                   radius: 42,
                   backgroundColor: AppColors.card,
-                  child: Icon(
-                    Icons.person,
-                    size: 42,
-                    color: AppColors.textPrimary,
-                  ),
+                  backgroundImage: AssetImage('lib/images/mills.jpg'),
                 ),
               ),
               const SizedBox(height: 14),

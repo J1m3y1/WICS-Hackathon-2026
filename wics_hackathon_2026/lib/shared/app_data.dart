@@ -59,9 +59,9 @@ const List<String> hobbyCategories = [
 ];
 
 const Map<String, String> hobbyCategoryMap = {
-  'Cooking': 'Creativity',
-  'Guitar': 'Creativity',
-  'Reading': 'Focus',
+  'AI Coding': 'Focus',
+  'Cyber Defense': 'Strategy',
+  'LLM Dev': 'Strategy',
 };
 
 class TaskItem {

@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:wics_hackathon_2026/pages/login_signup.dart';
-import '/theme/app_theme.dart';
+import '/shared/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

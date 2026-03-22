@@ -46,15 +46,22 @@ class _HomePage extends State<HomePage> {
     }
   }
 
+  String _getRankFromLevel(int level) {
+    if (level >= 5) return 'Legend';
+    if (level >= 4) return 'Master';
+    if (level >= 3) return 'Expert';
+    if (level >= 2) return 'Intermediate';
+    if (level >= 1) return 'Novice';
+    return 'Beginner';
+  }
+
   Map<String, dynamic> _buildUpdatedHobbyInfo({
     required Map<String, dynamic> currentInfo,
     required int xpChange,
   }) {
     int xp = (currentInfo['xp'] ?? 0) + xpChange;
-    int level = currentInfo['level'] ?? 1;
-    int maxXp = currentInfo['maxXp'] ?? 500;
-    String currentRank = currentInfo['currentRank'] ?? 'Beginner';
-    String nextRank = currentInfo['nextRank'] ?? 'Intermediate';
+    int level = currentInfo['level'] ?? 0;
+    int maxXp = currentInfo['maxXp'] ?? 100;
 
     if (xp < 0) {
       xp = 0;
@@ -63,9 +70,11 @@ class _HomePage extends State<HomePage> {
     while (xp >= maxXp) {
       xp -= maxXp;
       level += 1;
-      maxXp += 500;
+      maxXp += 200;
     }
 
+    final String currentRank = _getRankFromLevel(level);
+    final String nextRank = _getRankFromLevel(level + 1);
     final double progress = maxXp == 0 ? 0 : xp / maxXp;
 
     return {
@@ -77,6 +86,136 @@ class _HomePage extends State<HomePage> {
       'currentRank': currentRank,
       'nextRank': nextRank,
     };
+  }
+
+  Future<void> _showRankUpDialog({
+    required String hobbyName,
+    required int newLevel,
+    required String newRank,
+  }) async {
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Rank Up',
+      barrierColor: Colors.black.withValues(alpha: 0.65),
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppColors.card,
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.7),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.25),
+                    blurRadius: 22,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 84,
+                    height: 84,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.primary.withValues(alpha: 0.16),
+                      border: Border.all(color: AppColors.secondary, width: 2),
+                    ),
+                    child: const Icon(
+                      Icons.emoji_events_rounded,
+                      color: AppColors.secondary,
+                      size: 42,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Rank Up!',
+                    style: AppTextStyles.pageTitle.copyWith(
+                      fontSize: 28,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '$hobbyName reached Level $newLevel',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.body.copyWith(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Text(
+                      newRank,
+                      style: AppTextStyles.badgeText.copyWith(fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'You are building real momentum. Keep going — every completed task strengthens your hobby identity.',
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.subText.copyWith(
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.auto_awesome_rounded),
+                      label: const Text('Keep the streak alive'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return Transform.scale(
+          scale: curved.value,
+          child: Opacity(opacity: animation.value, child: child),
+        );
+      },
+    );
   }
 
   Future<void> _toggleTaskAndUpdateProgress({
@@ -104,15 +243,30 @@ class _HomePage extends State<HomePage> {
 
     final int xpChange = isNowCompleted ? 100 : -100;
 
+    final int oldLevel = currentInfo['level'] ?? 1;
+
     final updatedInfo = _buildUpdatedHobbyInfo(
       currentInfo: currentInfo,
       xpChange: xpChange,
     );
 
+    final int newLevel = updatedInfo['level'] ?? oldLevel;
+    final String newRank = updatedInfo['currentRank'] ?? 'Beginner';
+
     await userRef.update({
       'hobbies.${widget.hobbyKey}.$taskFieldName': updatedTasks,
       'hobbies.${widget.hobbyKey}.info': updatedInfo,
     });
+
+    if (!mounted) return;
+
+    if (isNowCompleted && newLevel > oldLevel) {
+      await _showRankUpDialog(
+        hobbyName: widget.hobbyKey,
+        newLevel: newLevel,
+        newRank: newRank,
+      );
+    }
   }
 
   @override

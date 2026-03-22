@@ -18,7 +18,13 @@ class _CreatePostPageState extends State<CreatePostPage> {
   int _xp = 0;
 
   final List<String> _hobbies = [
-    'Gym', 'Guitar', 'Painting', 'Chess', 'Running', 'Cooking', 'Reading'
+    'Gym',
+    'Guitar',
+    'Painting',
+    'Chess',
+    'Running',
+    'Cooking',
+    'Reading',
   ];
 
   Future<void> _pickImage() async {
@@ -59,18 +65,13 @@ class _CreatePostPageState extends State<CreatePostPage> {
           icon: const Icon(Icons.close, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'New Post',
-          style: AppTextStyles.sectionTitle,
-        ),
+        title: const Text('New Post', style: AppTextStyles.sectionTitle),
         actions: [
           TextButton(
             onPressed: _submit,
             child: Text(
               'Share',
-              style: AppTextStyles.badgeText.copyWith(
-                color: AppColors.primary,
-              ),
+              style: AppTextStyles.badgeText.copyWith(color: AppColors.primary),
             ),
           ),
         ],
@@ -117,10 +118,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
             const SizedBox(height: 24),
 
-            const Text(
-              'Username',
-              style: AppTextStyles.badgeText,
-            ),
+            const Text('Username', style: AppTextStyles.badgeText),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -129,31 +127,24 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Text(
-                '@${widget.username}',
-                style: AppTextStyles.subText,
-              ),
+              child: Text('@${widget.username}', style: AppTextStyles.subText),
             ),
 
             const SizedBox(height: 20),
-            const Text(
-              'Hobby',
-              style: AppTextStyles.badgeText,
-            ),
+            const Text('Hobby', style: AppTextStyles.badgeText),
             const SizedBox(height: 8),
             DropdownButtonFormField<String>(
               initialValue: _selectedHobby,
-              hint: const Text(
-                'Select a hobby',
-                style: AppTextStyles.subText,
-              ),
+              hint: const Text('Select a hobby', style: AppTextStyles.subText),
               dropdownColor: AppColors.card,
               style: AppTextStyles.body,
               decoration: InputDecoration(
                 filled: true,
                 fillColor: AppColors.card,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.border),
@@ -164,13 +155,12 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 ),
               ),
               items: _hobbies
-                  .map((h) => DropdownMenuItem(
-                        value: h,
-                        child: Text(
-                          h,
-                          style: AppTextStyles.body,
-                        ),
-                      ))
+                  .map(
+                    (h) => DropdownMenuItem(
+                      value: h,
+                      child: Text(h, style: AppTextStyles.body),
+                    ),
+                  )
                   .toList(),
               onChanged: (val) => setState(() => _selectedHobby = val),
             ),
@@ -180,10 +170,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Level',
-                  style: AppTextStyles.badgeText,
-                ),
+                const Text('Level', style: AppTextStyles.badgeText),
                 Text(
                   'Lvl $_level',
                   style: AppTextStyles.badgeText.copyWith(
@@ -203,10 +190,7 @@ class _CreatePostPageState extends State<CreatePostPage> {
             ),
 
             const SizedBox(height: 20),
-            const Text(
-              'XP Earned',
-              style: AppTextStyles.badgeText,
-            ),
+            const Text('XP Earned', style: AppTextStyles.badgeText),
             const SizedBox(height: 8),
             TextFormField(
               keyboardType: TextInputType.number,
@@ -216,8 +200,10 @@ class _CreatePostPageState extends State<CreatePostPage> {
                 hintStyle: AppTextStyles.subText,
                 filled: true,
                 fillColor: AppColors.card,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.border),

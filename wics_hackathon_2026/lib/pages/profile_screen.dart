@@ -35,6 +35,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: SafeArea(
           child: ListView(
+            key: const PageStorageKey('profile_screen_scroll'),
+            controller: _scrollController,
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: [
               _buildTopBar(),
@@ -133,6 +136,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   final List<String> _traitOrder = hobbyCategories;
+
+  ScrollController? get _scrollController => null;
 
   Stream<List<Hobby>> _userHobbiesStream() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -266,7 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Text("Cardini Panini", style: AppTextStyles.cardTitle),
+              const Text("Keith Mills", style: AppTextStyles.cardTitle),
               const SizedBox(height: 6),
               Text(identityLabel, style: AppTextStyles.body),
               const SizedBox(height: 16),

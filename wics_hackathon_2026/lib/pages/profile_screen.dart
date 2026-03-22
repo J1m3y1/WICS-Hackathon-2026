@@ -5,6 +5,7 @@ import 'package:wics_hackathon_2026/services/auth.dart';
 import '../shared/app_theme.dart';
 import '../shared/setting_buttons.dart';
 import 'profile_edit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -18,7 +19,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String userName = "Cardini Panini";
   String userBio = "He tries";
 
+ Future<void> loadProfile() async {
+  final prefs = await SharedPreferences.getInstance();
+  setState(() {
+    userName = prefs.getString("username") ?? "Cardini Panini";
+    userBio = prefs.getString("bio") ?? "He tries";
+  });
+}
 
+@override
+void initState() {
+  super.initState();
+  Future.microtask(() => loadProfile());
+}
 
   @override
   Widget build(BuildContext context) {

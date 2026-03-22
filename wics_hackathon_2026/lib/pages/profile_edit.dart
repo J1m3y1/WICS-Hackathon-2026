@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../shared/app_theme.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 class EditProfileScreen extends StatefulWidget {
   final String currentName;
   final String currentBio;
@@ -14,6 +16,7 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController nameController;
   late TextEditingController bioController;
+  File? profileImage;
 
   @override
   void initState() {
@@ -22,10 +25,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     bioController = TextEditingController(text: widget.currentBio);
   }
 
-  void saveProfile() {
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        profileImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  void saveProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', nameController.text);
+    await prefs.setString('bio', bioController.text);
+
     Navigator.pop(context, {
       "name": nameController.text,
       "bio": bioController.text,
+      "image": profileImage?.path,
     });
   }
 
@@ -66,16 +84,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
 
           const SizedBox(height: 30),
-          const Center(
+           Center(
              child: CircleAvatar(
               radius: 60, 
               backgroundColor: Color(0xFF7C4DFF),
-              child: Icon(Icons.person),
+              backgroundImage:
+                profileImage != null ? FileImage(profileImage!) : null,
+              child: profileImage == null ? const Icon(Icons.person, size: 60, color: Colors.white) : null,
              ),
            ),
            const SizedBox(height: 20),
-           const Center(
-             child: Text("Change Profile Picture", style: AppTextStyles.body),
+          Center(
+             child: GestureDetector(
+              onTap: pickImage,
+              child: const Text("Change Profile Picture", style: AppTextStyles.body),
+             ),
            ),
           const SizedBox(height: 40),
           TextField(
@@ -102,6 +125,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
            const SizedBox(height: 40),
           TextField(
             controller: bioController,
+            cursorColor: const Color(0xFF7C4DFF),
             style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
               labelText: "Bio", labelStyle: TextStyle(color: Colors.white70),

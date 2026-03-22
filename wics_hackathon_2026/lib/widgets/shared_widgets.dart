@@ -1,208 +1,142 @@
 import 'package:flutter/material.dart';
-import '/theme/app_theme.dart';
-import '/theme/app_text.dart';
+import '../shared/app_theme.dart';
 
-//XP Progress Bar
-class XpBar extends StatefulWidget {
-  final double percent; // 0.0 – 1.0
-  final double height;
+class FadeSlideIn extends StatefulWidget {
+  final Widget child;
+  final Duration delay;
 
-  const XpBar({super.key, required this.percent, this.height = 5});
+  const FadeSlideIn({
+    super.key,
+    required this.child,
+    this.delay = Duration.zero,
+  });
 
   @override
-  State<XpBar> createState() => _XpBarState();
+  State<FadeSlideIn> createState() => _FadeSlideInState();
 }
 
-class _XpBarState extends State<XpBar> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _anim;
+class _FadeSlideInState extends State<FadeSlideIn>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<Offset> _slide;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-    _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic);
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) _ctrl.animateTo(widget.percent);
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    _fade = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    Future.delayed(widget.delay, () {
+      if (mounted) _controller.forward();
     });
   }
 
   @override
-  void didUpdateWidget(XpBar old) {
-    super.didUpdateWidget(old);
-    if (old.percent != widget.percent) _ctrl.animateTo(widget.percent);
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
-
-  @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _anim,
-      builder: (_, __) => Container(
-        height: widget.height,
-        decoration: BoxDecoration(
-          color: AppColors.border,
-          borderRadius: BorderRadius.circular(99),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: FractionallySizedBox(
-          widthFactor: _anim.value,
-          alignment: Alignment.centerLeft,
-          child: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [AppColors.xpStart, AppColors.xpEnd]),
-              borderRadius: BorderRadius.all(Radius.circular(99)),
-            ),
-          ),
-        ),
-      ),
+    return FadeTransition(
+      opacity: _fade,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }
 
-//Badge pill
-class AppBadge extends StatelessWidget {
-  final String text;
-  final Color? bg;
-  final Color? borderColor;
-  final Color? textColor;
-
-  const AppBadge(this.text, {super.key, this.bg, this.borderColor, this.textColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg ?? AppColors.bgAccent,
-        border: Border.all(color: borderColor ?? AppColors.borderAccent),
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyles.badge.copyWith(color: textColor ?? AppColors.textAccent),
-      ),
-    );
-  }
-}
-
-//Hobby Chip
-class HobbyChip extends StatelessWidget {
-  final String emoji;
-  final String label;
-  final bool active;
-
-  const HobbyChip({super.key, required this.emoji, required this.label, this.active = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: active ? AppColors.bgAccent : AppColors.bgSurface,
-        border: Border.all(color: active ? AppColors.borderAccent : AppColors.border),
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: active ? FontWeight.w500 : FontWeight.w400,
-              color: active ? AppColors.textAccent : AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//Primary Button
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
   final bool dark;
 
-  const PrimaryButton({super.key, required this.label, this.onTap, this.dark = false});
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    required this.onTap,
+    this.dark = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: 50,
-        decoration: BoxDecoration(
-          color: dark ? AppColors.textPrimary : AppColors.bgAccent,
-          border: dark ? null : Border.all(color: AppColors.borderAccent),
-          borderRadius: BorderRadius.circular(13),
+    final Color backgroundColor = dark
+        ? AppColors.primary
+        : AppColors.secondary;
+    final Color foregroundColor = AppColors.textPrimary;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton(
+        onPressed: onTap,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: backgroundColor,
+          foregroundColor: foregroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
-        alignment: Alignment.center,
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-            color: dark ? Colors.white : AppColors.textAccent,
-          ),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
         ),
       ),
     );
   }
 }
 
-//Ghost Button
 class GhostButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
 
-  const GhostButton({super.key, required this.label, this.onTap});
+  const GhostButton({super.key, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: 46,
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(13),
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: onTap,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          foregroundColor: AppColors.textPrimary,
         ),
-        alignment: Alignment.center,
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 }
 
-//Section header
 class SectionHeader extends StatelessWidget {
   final String tag;
   final String heading;
-  final String? italic;
+  final String italic;
   final String? subtitle;
 
   const SectionHeader({
     super.key,
     required this.tag,
     required this.heading,
-    this.italic,
+    required this.italic,
     this.subtitle,
   });
 
@@ -211,73 +145,142 @@ class SectionHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppBadge(tag),
-        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.chipBackground,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            tag,
+            style: AppTextStyles.label.copyWith(
+              color: AppColors.secondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
         RichText(
           text: TextSpan(
-            style: AppTextStyles.sectionHeading,
+            style: AppTextStyles.pageTitle,
             children: [
               TextSpan(text: heading),
-              if (italic != null) ...[
-                const TextSpan(text: '\n'),
-                TextSpan(
-                  text: italic,
-                  style: AppTextStyles.sectionHeading.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.textAccent,
-                  ),
+              const TextSpan(text: ' '),
+              TextSpan(
+                text: italic,
+                style: AppTextStyles.pageTitle.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.secondary,
                 ),
-              ],
+              ),
             ],
           ),
         ),
         if (subtitle != null) ...[
           const SizedBox(height: 10),
-          Text(subtitle!, style: AppTextStyles.body),
+          Text(subtitle!, style: AppTextStyles.subText),
         ],
       ],
     );
   }
 }
 
-//Fade+slide reveal
-class FadeSlideIn extends StatefulWidget {
-  final Widget child;
-  final Duration delay;
-  final Duration duration;
+class HobbyChip extends StatelessWidget {
+  final String emoji;
+  final String label;
+  final bool active;
 
-  const FadeSlideIn({
+  const HobbyChip({
     super.key,
-    required this.child,
-    this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 600),
+    required this.emoji,
+    required this.label,
+    required this.active,
   });
 
   @override
-  State<FadeSlideIn> createState() => _FadeSlideInState();
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: active
+            ? AppColors.primary.withOpacity(0.18)
+            : AppColors.chipBackground,
+        border: Border.all(
+          color: active ? AppColors.primary : AppColors.border,
+        ),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 14)),
+          const SizedBox(width: 8),
+          Text(label, style: AppTextStyles.chipText),
+        ],
+      ),
+    );
+  }
 }
 
-class _FadeSlideInState extends State<FadeSlideIn> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _fade;
-  late Animation<Offset> _slide;
+class AppBadge extends StatelessWidget {
+  final String label;
+
+  const AppBadge(this.label, {super.key});
 
   @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: widget.duration);
-    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _slide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
-    Future.delayed(widget.delay, () { if (mounted) _ctrl.forward(); });
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.16),
+        border: Border.all(color: AppColors.primary.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.badgeText.copyWith(
+          color: AppColors.secondary,
+          fontSize: 11,
+        ),
+      ),
+    );
   }
+}
+
+class XpBar extends StatelessWidget {
+  final double percent;
+
+  const XpBar({super.key, required this.percent});
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  Widget build(BuildContext context) {
+    final clamped = percent.clamp(0.0, 1.0);
 
-  @override
-  Widget build(BuildContext context) => FadeTransition(
-    opacity: _fade,
-    child: SlideTransition(position: _slide, child: widget.child),
-  );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        height: 8,
+        color: AppColors.progressBackground,
+        child: Row(
+          children: [
+            Flexible(
+              flex: (clamped * 1000).round(),
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.xpStart, AppColors.xpEnd],
+                  ),
+                ),
+              ),
+            ),
+            Flexible(
+              flex: 1000 - (clamped * 1000).round(),
+              child: const SizedBox.expand(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

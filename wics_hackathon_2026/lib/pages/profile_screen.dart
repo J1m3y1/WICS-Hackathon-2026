@@ -154,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             final hobbyData = Map<String, dynamic>.from(entry.value);
             final info = Map<String, dynamic>.from(hobbyData['info'] ?? {});
             final merged = {...info, ...hobbyData};
-            return Hobby.fromMap(merged);
+            return Hobby.fromMap(entry.key, merged);
           }).toList();
         });
   }

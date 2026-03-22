@@ -6,60 +6,7 @@ import 'create_post.dart';
 import 'dart:io';
 import 'package:wics_hackathon_2026/shared/app_theme.dart';
 
-class HobbyPost {
-  final String username;
-  final String hobby;
-  final int level;
-  final int xp;
-  final String timeAgo;
-  final String? imagePath;
-  final bool isFile;
 
-  const HobbyPost({
-    required this.username,
-    required this.hobby,
-    required this.level,
-    required this.xp,
-    required this.timeAgo,
-    this.imagePath,
-    this.isFile = false,
-  });
-}
-
-final List<HobbyPost> samplePosts = [
-  HobbyPost(
-    username: 'alex',
-    hobby: 'Gym',
-    level: 5,
-    xp: 80,
-    timeAgo: '2 min ago',
-    imagePath: 'assets/images/gympost.avif',
-  ),
-  HobbyPost(
-    username: 'mia',
-    hobby: 'Guitar',
-    level: 2,
-    xp: 40,
-    timeAgo: '18 min ago',
-    imagePath: 'assets/images/guitar.jpg',
-  ),
-  HobbyPost(
-    username: 'jordan',
-    hobby: 'Painting',
-    level: 3,
-    xp: 60,
-    timeAgo: '45 min ago',
-    imagePath: 'assets/images/painting.webp',
-  ),
-  HobbyPost(
-    username: 'sam',
-    hobby: 'Chess',
-    level: 7,
-    xp: 120,
-    timeAgo: '1 hr ago',
-    imagePath: 'assets/images/chess.avif',
-  ),
-];
 
 class CommunityFeed extends StatefulWidget {
   final String hobbyKey;
@@ -160,9 +107,6 @@ class _CommunityFeedState extends State<CommunityFeed> {
                     itemBuilder: (context, index) {
                       return _PostCard(
                         post: posts[index],
-                        accentColor: _accentColor,
-                        subtleText: _subtleText,
-                        borderColor: _borderColor,
                       );
                     },
                   );

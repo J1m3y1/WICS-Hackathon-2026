@@ -14,52 +14,69 @@ class HomePage extends StatefulWidget {
 
 class _HomePage extends State<HomePage> {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  List<Map<String, dynamic>> dailyTasks = [];
-  List<Map<String, dynamic>> weeklyTasks = [];
 
-  @override
-  void initState() {
-    super.initState();
-    getUserHobbyTasks();
+  // Logic for calculating XP/Leveling based on your second snippet
+  Map<String, dynamic> _buildUpdatedHobbyInfo({
+    required Map<String, dynamic> currentInfo,
+    required int xpChange,
+  }) {
+    int xp = (currentInfo['xp'] ?? 0) + xpChange;
+    int level = currentInfo['level'] ?? 1;
+    int maxXp = currentInfo['maxXp'] ?? 500;
+
+    if (xp < 0) xp = 0;
+
+    while (xp >= maxXp) {
+      xp -= maxXp;
+      level += 1;
+      maxXp += 500;
+    }
+
+    return {
+      ...currentInfo,
+      'xp': xp,
+      'level': level,
+      'maxXp': maxXp,
+      'progress': maxXp == 0 ? 0 : xp / maxXp,
+    };
   }
 
-  void getUserHobbyTasks() async {
-  final User? user = Auth().currentUser;
-  if (user == null) return;
-
-  final firestore = FirebaseFirestore.instance;
-
-  try {
-    final dailySnapshot = await firestore
-        .collection('users')
-        .doc(user.uid)
+  // Updated to handle sub-collection toggle + XP update
+  Future<void> _toggleTask({
+    required User user,
+    required Map<String, dynamic> task,
+    required String collectionName,
+  }) async {
+    final userRef = firestore.collection('users').doc(user.uid);
+    final taskRef = userRef
         .collection('hobbies')
         .doc(widget.hobbyKey)
-        .collection('DailyTasks')
-        .get();
+        .collection(collectionName)
+        .doc(task['id']);
 
-    final weeklySnapshot = await firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('hobbies')
-        .doc(widget.hobbyKey)
-        .collection('WeeklyTasks')
-        .get();
+    final bool isNowCompleted = !(task['completed'] ?? false);
+    final int xpChange = isNowCompleted ? 100 : -100;
 
-    setState(() {
-      dailyTasks = dailySnapshot.docs
-          .map((doc) => doc.data())
-          .toList();
+    // Get current XP info from the main hobby document
+    final hobbyDoc = await userRef.collection('hobbies').doc(widget.hobbyKey).get();
+    final currentInfo = (hobbyDoc.data()?['info'] as Map<String, dynamic>?) ?? {};
 
-      weeklyTasks = weeklySnapshot.docs
-          .map((doc) => doc.data())
-          .toList();
-    });
+    final updatedInfo = _buildUpdatedHobbyInfo(
+      currentInfo: currentInfo,
+      xpChange: xpChange,
+    );
 
-  } catch (e) {
-    print("Error fetching tasks: $e");
+    // Batch update: Task status and XP progress
+    WriteBatch batch = firestore.batch();
+    batch.update(taskRef, {'completed': isNowCompleted});
+    batch.set(
+      userRef.collection('hobbies').doc(widget.hobbyKey),
+      {'info': updatedInfo},
+      SetOptions(merge: true),
+    );
+
+    await batch.commit();
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -67,189 +84,100 @@ class _HomePage extends State<HomePage> {
     if (user == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        body: const Center(
-          child: Text('User not logged in', style: AppTextStyles.body),
-        ),
+        body: const Center(child: Text('User not logged in', style: AppTextStyles.body)),
       );
     }
 
-    final weeklyStream = firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('hobbies')
-        .doc(widget.hobbyKey)
-        .collection('WeeklyTasks')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-
-    final dailyStream = firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('hobbies')
-        .doc(widget.hobbyKey)
-        .collection('DailyTasks')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-
-    final weeklyStream = firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('hobbies')
-        .doc(widget.hobbyKey)
-        .collection('WeeklyTasks')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
-
-    final dailyStream = firestore
-        .collection('users')
-        .doc(user.uid)
-        .collection('hobbies')
-        .doc(widget.hobbyKey)
-        .collection('DailyTasks')
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+    // Streams from sub-collections (Logic from 1st snippet)
+    final hobbyPath = firestore.collection('users').doc(user.uid).collection('hobbies').doc(widget.hobbyKey);
+    final weeklyStream = hobbyPath.collection('WeeklyTasks').snapshots();
+    final dailyStream = hobbyPath.collection('DailyTasks').snapshots();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.background,
-        surfaceTintColor: AppColors.background,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        title: Text(
-          '${widget.hobbyKey} Tasks',
-          style: AppTextStyles.pageTitle.copyWith(fontSize: 22),
-        ),
+        title: Text('${widget.hobbyKey} Tasks', style: AppTextStyles.pageTitle.copyWith(fontSize: 22)),
       ),
-      body: StreamBuilder<List<Map<String, dynamic>>>(
+      body: StreamBuilder<QuerySnapshot>(
         stream: weeklyStream,
-        builder: (context, weeklySnapshot) {
-          if (!weeklySnapshot.hasData) return Center(child: CircularProgressIndicator());
-          final weeklyTasks = weeklySnapshot.data!;
-
-          return StreamBuilder<List<Map<String, dynamic>>>(
-            stream: dailyStream, 
-            builder: (context, dailySnapshot) {
-              if (!dailySnapshot.hasData) return Center(child: CircularProgressIndicator());
-              final dailyTasks = dailySnapshot.data!;
-
-              if(weeklyTasks.isEmpty && dailyTasks.isEmpty) {
-                return Center(child: Text('No tasks for this hobby yet.'));
+        builder: (context, weeklySnap) {
+          return StreamBuilder<QuerySnapshot>(
+            stream: dailyStream,
+            builder: (context, dailySnap) {
+              if (!weeklySnap.hasData || !dailySnap.hasData) {
+                return const Center(child: CircularProgressIndicator(color: AppColors.secondary));
               }
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: firestore.collection('users').doc(user.uid).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Error: ${snapshot.error}',
-                style: AppTextStyles.body,
-              ),
-            );
-          }
 
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.secondary),
-            );
-          }
+              final weeklyTasks = weeklySnap.data!.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+              final dailyTasks = dailySnap.data!.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
 
-          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-
-          final weeklyTasks = List<Map<String, dynamic>>.from(
-            data['hobbies']?[widget.hobbyKey]?['WeeklyTasks'] ?? [],
-          );
-
-          final dailyTasks = List<Map<String, dynamic>>.from(
-            data['hobbies']?[widget.hobbyKey]?['DailyTasks'] ?? [],
-          );
-
-          if (weeklyTasks.isEmpty && dailyTasks.isEmpty) {
-            return const Center(
-              child: Text(
-                'No tasks for this hobby yet.',
-                style: AppTextStyles.body,
-              ),
-            );
-          }
+              if (weeklyTasks.isEmpty && dailyTasks.isEmpty) {
+                return const Center(child: Text('No tasks for this hobby.', style: AppTextStyles.body));
+              }
 
               final totalItems = weeklyTasks.length + dailyTasks.length + 2;
 
               return ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: totalItems,
                 itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return const ListTile(
-                    title: Text('Weekly Tasks', style: TextStyle(fontWeight: FontWeight.bold),),
-                  );
-                  }
+                  // --- SECTION HEADERS ---
+                  if (index == 0) return _buildHeader('Weekly Tasks');
+                  if (index == weeklyTasks.length + 1) return _buildHeader('Daily Tasks');
 
-                  if(index > 0 && index <= weeklyTasks.length) {
-                    final task = weeklyTasks[index - 1];
-                    task['completed'] = task['completed'] ?? false;
-                    
-                    return ListTile(
-                      onTap: () async {
-                          task['completed'] = !task['completed'];
-                          await firestore
-                            .collection('users')
-                            .doc(user.uid)
-                            .collection('hobbies')
-                            .doc(widget.hobbyKey)
-                            .collection('WeeklyTasks')
-                            .doc(task['id']) 
-                            .update({'completed': task['completed']});
-                        setState(() {});
-                      },
-                      title: Text(task['title']?? "No Title",
-                      style: TextStyle(color: task['completed'] ? Colors.grey : Colors.black),
-                    ),
-                      subtitle: Text(task['description']?? ""),
-                      trailing: task['completed'] 
-                      ? const Icon(Icons.check, color: Colors.green) 
-                      :null,
-                    );
-                  }
+                  // --- TASK CARDS ---
+                  final bool isWeekly = index <= weeklyTasks.length;
+                  final taskIndex = isWeekly ? index - 1 : index - weeklyTasks.length - 2;
+                  final task = isWeekly ? weeklyTasks[taskIndex] : dailyTasks[taskIndex];
+                  final collectionName = isWeekly ? 'WeeklyTasks' : 'DailyTasks';
 
-                  if (index == weeklyTasks.length + 1) {
-                    return const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text('Daily Tasks', style: AppTextStyles.sectionTitle),
-                    );
-                  }
-
-                  final dailyIndex = index - weeklyTasks.length - 2;
-                  final task = dailyTasks[dailyIndex];
-                  task['completed'] = task['completed'] ?? false;
-                  
-                  return ListTile(
-                    onTap: () async {
-                        task['completed'] = !task['completed'];
-                        await firestore
-                          .collection('users')
-                          .doc(user.uid)
-                          .collection('hobbies')
-                          .doc(widget.hobbyKey)
-                          .collection('DailyTasks')
-                          .doc(task['id']) 
-                          .update({'completed': task['completed']});
-                      setState(() {});
-                    },
-                    title: Text(task['title']?? "No Title", style: TextStyle(color: task['completed'] ? Colors.grey : Colors.black),
-                    
-                    ),
-                    subtitle: Text(task['description']?? ""),
-                    trailing: task['completed'] 
-                      ? const Icon(Icons.check, color: Colors.green)
-                      :null,
-                  );
-                  
+                  return _buildTaskCard(user, task, collectionName);
                 },
               );
-              }
-            );
+            },
+          );
         },
+      ),
+    );
+  }
+
+  Widget _buildHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(title, style: AppTextStyles.sectionTitle),
+    );
+  }
+
+  Widget _buildTaskCard(User user, Map<String, dynamic> task, String collectionName) {
+    final bool isComp = task['completed'] ?? false;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        onTap: () => _toggleTask(user: user, task: task, collectionName: collectionName),
+        title: Text(
+          task['title'] ?? 'No Title',
+          style: TextStyle(
+            color: isComp ? AppColors.textSecondary : AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            decoration: isComp ? TextDecoration.lineThrough : TextDecoration.none,
+          ),
+        ),
+        subtitle: Text(task['description'] ?? '', style: AppTextStyles.subText),
+        trailing: Icon(
+          isComp ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+          color: isComp ? AppColors.secondary : AppColors.textSecondary,
+        ),
       ),
     );
   }

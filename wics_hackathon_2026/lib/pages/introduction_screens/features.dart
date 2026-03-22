@@ -36,7 +36,6 @@ class FeaturesScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // Dashboard mockup card
               FadeSlideIn(
                 delay: const Duration(milliseconds: 200),
                 child: Container(
@@ -48,7 +47,6 @@ class FeaturesScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // Header row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -76,8 +74,6 @@ class FeaturesScreen extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 14),
-
-                      // Hobby rows
                       ...List.generate(
                         _hobbies.length,
                         (i) => Padding(
@@ -90,8 +86,6 @@ class FeaturesScreen extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 4),
-
-                      // Stat pills
                       Row(
                         children: [
                           Expanded(child: _StatPill(value: '47', label: 'Tasks done')),
@@ -133,7 +127,6 @@ class _HobbyRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Emoji icon
           Container(
             width: 38, height: 38,
             decoration: BoxDecoration(
@@ -145,8 +138,6 @@ class _HobbyRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-
-          // Name + level + bar
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/pages/hobby_selector.dart';
+import 'package:wics_hackathon_2026/services/api_service.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
 import 'introduction_screens/onboarding_flow.dart';
 import '../theme/app_theme.dart';
@@ -21,6 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   String? errorMessage;
   bool _obscurePassword = true;
   bool _obscureRePassword = true;
+  final List<String> setHobbies = ["Guitar", "Gardening", "Fitness"];
 
   final _controllerEmail = TextEditingController();
 
@@ -60,44 +62,115 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _signUp() async {
-    setState(() => errorMessage = null);
-    final email = _controllerEmail.text.trim();
-    final password = _controllerPassword.text.trim();
-    final repassword = _controllerRePassword.text.trim();
+  setState(() => errorMessage = null);
 
-    if (password != repassword) {
-      setState(() => errorMessage = 'Passwords do not match.');
-      return;
-    }
+  final email = _controllerEmail.text.trim();
+  final password = _controllerPassword.text.trim();
+  final repassword = _controllerRePassword.text.trim();
 
-    try {
-      final userCredential = await Auth().createUserWithEmailPassword(
-        email: email,
-        password: password,
-      );
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userCredential.user!.uid)
-          .set({'role': 'user'});
-
-      _controllerEmail.clear();
-      _controllerPassword.clear();
-      _controllerRePassword.clear();
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Account created — please log in.'),
-          backgroundColor: AppColors.textPrimary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      setState(() => isLogin = true);
-    } on FirebaseAuthException catch (e) {
-      setState(() => errorMessage = e.message);
-    }
+  if (password != repassword) {
+    setState(() => errorMessage = 'Passwords do not match.');
+    return;
   }
+
+  try {
+    final UserCredential userCredential =
+        await Auth().createUserWithEmailPassword(
+      email: email,
+      password: password,
+    );
+
+    final String uid = userCredential.user!.uid;
+
+    final llmResults = await LLMService()
+        .fetchHobbyTasks(["Guitar", "Gardening", "Fitness"]);
+
+    print("RAW LLM RESULTS:");
+    print(llmResults);
+    print("TYPE:");
+    print(llmResults.runtimeType);
+
+    if (llmResults == null) {
+      throw Exception("Failed to fetch AI tasks");
+    }
+
+    final firestore = FirebaseFirestore.instance;
+
+    final userDocRef = firestore.collection('users').doc(uid);
+
+    await userDocRef.set({
+      'email': email,
+      'role': 'user',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    for (final entry in llmResults.entries) {
+      final String hobbyName = entry.key;
+      final Map<String, dynamic> taskData = entry.value;
+
+      final hobbyDocRef =
+          userDocRef.collection('hobbies').doc(hobbyName);
+
+      await hobbyDocRef.set({
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      final List dailyTasks = taskData['daily'] ?? [];
+
+      for (var task in dailyTasks) {
+        String title;
+        String description;
+
+        if (task is Map<String, dynamic>) {
+          title = task['task'] ?? 'Task';
+          description = task['description'] ?? '';
+        } else if (task is String) {
+          title = task.split(' ').take(3).join(' ');
+          description = task;
+        } else {
+          continue;
+        }
+
+        await hobbyDocRef.collection('DailyTasks').add({
+          'title': title,
+          'description': description,
+          'completed': false,
+        });
+      }
+
+      final List weeklyTasks = taskData['weekly'] ?? [];
+
+      for (var task in weeklyTasks) {
+        String title;
+        String description;
+
+        if (task is Map<String, dynamic>) {
+          title = task['task'] ?? 'Weekly Goal';
+          description = task['description'] ?? '';
+        } else if (task is String) {
+          title = "Weekly Goal";
+          description = task;
+        } else {
+          continue;
+        }
+
+        await hobbyDocRef.collection('WeeklyTasks').add({
+          'title': title,
+          'description': description,
+          'completed': false,
+        });
+      }
+      }
+
+    print("Database successfully populated with AI tasks!");
+
+    setState(() => isLogin = true);
+
+  } catch (e) {
+    print("Signup Error: $e");
+    setState(() => errorMessage = e.toString());
+  }
+}
 
   Widget _inputField({
     required String label,

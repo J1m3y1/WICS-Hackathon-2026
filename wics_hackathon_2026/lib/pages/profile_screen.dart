@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../shared/app_theme.dart';
 import '../shared/setting_buttons.dart';
-
+import 'profile_edit.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -12,6 +12,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool notificationsEnabled = true;
+
+  String userName = "Cardini Panini";
+  String userBio = "He tries";
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +47,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.person_outline_rounded,
                 title: "Edit Profile",
                 subtitle: "Update your username, bio, and profile photo",
-                onTap: () {},
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProfileScreen(
+                        currentName: userName,
+                        currentBio: userBio,
+                      ),
+                    ),
+                  );
+
+                  if (result != null) {
+                    setState(() {
+                      userName = result["name"];
+                      userBio = result["bio"];
+                    });
+                  }
+
+
+                },
               ),
               SettingTile(
                 icon: Icons.lock_outline_rounded,
@@ -155,9 +179,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          const Text("Cardini Panini", style: AppTextStyles.cardTitle),
+          Text(userName, style: AppTextStyles.cardTitle),
           const SizedBox(height: 6),
-          const Text("He Tries", style: AppTextStyles.body),
+          Text(userBio, style: AppTextStyles.body),
           const SizedBox(height: 16),
           Wrap(
             spacing: 10,

@@ -30,17 +30,21 @@ class _HobbyPageState extends State<HobbyPage> {
   }
 
   Stream<List<Hobby>> getUserHobbies(String userID) {
-    return users.doc(userID).snapshots().map((snapshot) {
-      final data = snapshot.data() as Map<String, dynamic>? ?? {};
-      final hobbiesMap = data['hobbies'] as Map<String, dynamic>? ?? {};
+  return users
+      .doc(userID)
+      .collection('hobbies')
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) {
+      final hobbyData = doc.data();
 
-      return hobbiesMap.entries.map((entry) {
-        final hobbyData = entry.value as Map<String, dynamic>? ?? {};
-        final info = hobbyData['info'] as Map<String, dynamic>? ?? {};
-        return Hobby.fromMap(info, hobbyData);
-      }).toList();
-    });
-  }
+      return Hobby.fromMap(
+        {'name': doc.id}, 
+        hobbyData,
+      );
+    }).toList();
+  });
+}
 
 
   List<Hobby> applyFilter(List<Hobby> hobbies) {

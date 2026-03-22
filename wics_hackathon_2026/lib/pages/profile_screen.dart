@@ -7,7 +7,7 @@ import 'package:wics_hackathon_2026/services/auth.dart';
 import '../shared/app_theme.dart';
 import '../shared/app_data.dart';
 import '../shared/setting_buttons.dart';
-
+import 'package:wics_hackathon_2026/pages/profile_edit.dart';
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -17,6 +17,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool notificationsEnabled = true;
+  String username = "Cardini Panini";
+  String bio = "Bio";
+  String? profileImagePath;
+
+   @override
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +52,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.person_outline_rounded,
                 title: "Edit Profile",
                 subtitle: "Update your username, bio, and profile photo",
-                onTap: () {},
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute
+                      (builder: (_) => EditProfileScreen(
+                        currentName: username,
+                        currentBio: bio,
+                      ),
+                    ),
+                  );
+                  if (result != null) {
+                    setState(() {
+                      username = result['name'] ?? username;
+                      bio = result['bio'] ?? bio;
+                      profileImagePath = result['image'] ?? profileImagePath;
+                    });
+                  }
+                },
               ),
               SettingTile(
                 icon: Icons.lock_outline_rounded,
                 title: "Change Password",
                 subtitle: "Update your password for account security",
                 onTap: () {},
+                
               ),
               SettingTile(
                 icon: Icons.email_outlined,
@@ -266,7 +289,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 14),
-              const Text("Cardini Panini", style: AppTextStyles.cardTitle),
+              Text(username, style: AppTextStyles.sectionTitle),
               const SizedBox(height: 6),
               Text(identityLabel, style: AppTextStyles.body),
               const SizedBox(height: 16),

@@ -5,6 +5,7 @@ import 'package:wics_hackathon_2026/pages/profile_screen.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
 import '../../shared/app_data.dart';
 import '../../shared/app_theme.dart';
+import 'dart:math';
 
 class HobbyPage extends StatefulWidget {
   const HobbyPage({super.key});
@@ -15,22 +16,36 @@ class HobbyPage extends StatefulWidget {
 
 class _HobbyPageState extends State<HobbyPage> {
   String selectedFilter = 'All';
-
+  final List<String> hobbyImages = ['lib/images/gamescene1.jpg', 'lib/images/gamescene2.jpg'];
   final List<String> filters = ['All', 'Creative', 'Relax', 'Level Up'];
   final CollectionReference users = FirebaseFirestore.instance.collection("users");
+  late Stream<List<Hobby>> _hobbyStream;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = Auth().currentUser;
+    if (user != null) {
+      _hobbyStream = getUserHobbies(user.uid);
+    }
+  }
 
   Stream<List<Hobby>> getUserHobbies(String userID) {
-    return users.doc(userID).snapshots().map((snapshot) {
-      final data = snapshot.data() as Map<String, dynamic>? ?? {};
-      final hobbiesMap = data['hobbies'] as Map<String, dynamic>? ?? {};
+  return users
+      .doc(userID)
+      .collection('hobbies')
+      .snapshots()
+      .map((snapshot) {
+    return snapshot.docs.map((doc) {
+      final hobbyData = doc.data();
 
-      return hobbiesMap.entries.map((entry) {
-        final hobbyData = entry.value as Map<String, dynamic>? ?? {};
-        final info = hobbyData['info'] as Map<String, dynamic>? ?? {};
-        return Hobby.fromMap(info, hobbyData);
-      }).toList();
-    });
-  }
+      return Hobby.fromMap(
+        {'name': doc.id}, 
+        hobbyData,
+      );
+    }).toList();
+  });
+}
 
 
   List<Hobby> applyFilter(List<Hobby> hobbies) {
@@ -119,7 +134,6 @@ class _HobbyPageState extends State<HobbyPage> {
 
   @override
   Widget build(BuildContext context) {
-    final user = Auth().currentUser;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -127,7 +141,7 @@ class _HobbyPageState extends State<HobbyPage> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: StreamBuilder<List<Hobby>>(
-            stream: getUserHobbies(user!.uid), 
+            stream: _hobbyStream, 
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting){
                 return const Center(child: CircularProgressIndicator());
@@ -141,7 +155,10 @@ class _HobbyPageState extends State<HobbyPage> {
               }
 
               final filteredHobbies = applyFilter(hobbies);
-              final recommendedHobby = getRecommendedHobby(filteredHobbies);
+              Hobby? recommendedHobby;
+              if (filteredHobbies.isNotEmpty) {
+                recommendedHobby = getRecommendedHobby(filteredHobbies);
+              }
 
               return Column(
             children: [
@@ -150,8 +167,10 @@ class _HobbyPageState extends State<HobbyPage> {
               Expanded(
                 child: ListView(
                   children: [
-                    _buildHappinessCard(recommendedHobby),
-                    const SizedBox(height: 16),
+                    if (recommendedHobby != null) ...[
+                      _buildHappinessCard(recommendedHobby),
+                      const SizedBox(height: 16),
+                    ],
                     _buildFilterRow(),
                     const SizedBox(height: 18),
                     ...filteredHobbies.map(
@@ -311,6 +330,8 @@ class _HobbyPageState extends State<HobbyPage> {
   }
 
   Widget _buildHobbyCard(Hobby hobby) {
+    final random = Random();
+    final randomImage = hobbyImages[random.nextInt(hobbyImages.length)];
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -326,7 +347,7 @@ class _HobbyPageState extends State<HobbyPage> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(hobby.imagePath, fit: BoxFit.cover),
+              Image.asset(randomImage, fit: BoxFit.cover),
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(

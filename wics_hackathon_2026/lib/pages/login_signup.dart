@@ -2,160 +2,216 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wics_hackathon_2026/pages/hobby_selector.dart';
+import 'package:wics_hackathon_2026/services/api_service.dart';
 import 'package:wics_hackathon_2026/services/auth.dart';
-
+import 'introduction_screens/onboarding_flow.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_text.dart';
+import '../widgets/shared_widgets.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final bool initialIsLogin;
+  const LoginPage({super.key, this.initialIsLogin = true});
 
   @override
-  State<LoginPage> createState() => _LoginPage();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPage extends State<LoginPage> {
-  final CollectionReference users = FirebaseFirestore.instance.collection(
-    "users",
-  );
-  String? errorMessage = '';
-  bool isLogin = true;
+class _LoginPageState extends State<LoginPage> {
+  late bool isLogin;
+  String? errorMessage;
+  bool _obscurePassword = true;
+  bool _obscureRePassword = true;
+  final List<String> setHobbies = ["Guitar", "Gardening", "Fitness"];
 
-  final TextEditingController _controllerEmail = TextEditingController();
-  final TextEditingController _controllerPassword = TextEditingController();
-  final TextEditingController _controllerRePassword = TextEditingController();
+  final _controllerEmail = TextEditingController();
 
-  //Calls from "auth.dart" to verify and if successful it updates local state to change to main navigation screen
-  Future<void> signInWithEmailPassword() async {
+  @override
+  void initState() {
+    super.initState();
+    isLogin = widget.initialIsLogin;
+  }
+  final _controllerPassword = TextEditingController();
+  final _controllerRePassword = TextEditingController();
+
+  @override
+  void dispose() {
+    _controllerEmail.dispose();
+    _controllerPassword.dispose();
+    _controllerRePassword.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signIn() async {
+    setState(() => errorMessage = null);
     try {
       await Auth().signInWithEmailPassword(
-        email: _controllerEmail.text,
-        password: _controllerPassword.text,
+        email: _controllerEmail.text.trim(),
+        password: _controllerPassword.text.trim(),
       );
-
-      setState(() {
-        isLogin = true;
-        errorMessage = '';
-      });
-
       _controllerEmail.clear();
       _controllerPassword.clear();
-
+      if (!mounted) return;
       Navigator.pushReplacement(
-        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(builder: (_) => HobbyPage()),
       );
     } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
-    }
-  }
-  //Calls from "auth.dart" to create a user, saves to firebase, and switches to login view.
-  Future<void> createUserWithEmailPassword() async {
-    final email = _controllerEmail.text.trim();
-    final password = _controllerPassword.text.trim();
-    final repassword = _controllerRePassword.text.trim();
-
-    if (password != repassword) {
-      setState(() {
-        errorMessage = 'Passwords do not match!';
-      });
-      return;
-    }
-
-    try {
-      UserCredential userCredential = await Auth().createUserWithEmailPassword(
-        email: email,
-        password: password,
-      );
-
-      String uid = userCredential.user!.uid;
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
-        'role': 'user',
-      });
-
-      _controllerEmail.clear();
-      _controllerPassword.clear();
-      _controllerRePassword.clear();
-
-      setState(() {
-        isLogin = true;
-      });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Account created, Login.")));
-    } on FirebaseAuthException catch (e) {
-      setState(() {
-        errorMessage = e.message;
-      });
+      setState(() => errorMessage = e.message);
     }
   }
 
-  Widget _entryField(
-    String title,
-    TextEditingController controller, {
+  Future<void> _signUp() async {
+  setState(() => errorMessage = null);
+
+  final email = _controllerEmail.text.trim();
+  final password = _controllerPassword.text.trim();
+  final repassword = _controllerRePassword.text.trim();
+
+  if (password != repassword) {
+    setState(() => errorMessage = 'Passwords do not match.');
+    return;
+  }
+
+  try {
+    final UserCredential userCredential =
+        await Auth().createUserWithEmailPassword(
+      email: email,
+      password: password,
+    );
+
+    final String uid = userCredential.user!.uid;
+
+    final llmResults = await LLMService()
+        .fetchHobbyTasks(["Guitar", "Gardening", "Fitness"]);
+
+    print("RAW LLM RESULTS:");
+    print(llmResults);
+    print("TYPE:");
+    print(llmResults.runtimeType);
+
+    if (llmResults == null) {
+      throw Exception("Failed to fetch AI tasks");
+    }
+
+    final firestore = FirebaseFirestore.instance;
+
+    final userDocRef = firestore.collection('users').doc(uid);
+
+    await userDocRef.set({
+      'email': email,
+      'role': 'user',
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+
+    for (final entry in llmResults.entries) {
+      final String hobbyName = entry.key;
+      final Map<String, dynamic> taskData = entry.value;
+
+      final hobbyDocRef =
+          userDocRef.collection('hobbies').doc(hobbyName);
+
+      await hobbyDocRef.set({
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      final List dailyTasks = taskData['daily'] ?? [];
+
+      for (var task in dailyTasks) {
+        String title;
+        String description;
+
+        if (task is Map<String, dynamic>) {
+          title = task['task'] ?? 'Task';
+          description = task['description'] ?? '';
+        } else if (task is String) {
+          title = task.split(' ').take(3).join(' ');
+          description = task;
+        } else {
+          continue;
+        }
+
+        await hobbyDocRef.collection('DailyTasks').add({
+          'title': title,
+          'description': description,
+          'completed': false,
+        });
+      }
+
+      final List weeklyTasks = taskData['weekly'] ?? [];
+
+      for (var task in weeklyTasks) {
+        String title;
+        String description;
+
+        if (task is Map<String, dynamic>) {
+          title = task['task'] ?? 'Weekly Goal';
+          description = task['description'] ?? '';
+        } else if (task is String) {
+          title = "Weekly Goal";
+          description = task;
+        } else {
+          continue;
+        }
+
+        await hobbyDocRef.collection('WeeklyTasks').add({
+          'title': title,
+          'description': description,
+          'completed': false,
+        });
+      }
+      }
+
+    print("Database successfully populated with AI tasks!");
+
+    setState(() => isLogin = true);
+
+  } catch (e) {
+    print("Signup Error: $e");
+    setState(() => errorMessage = e.toString());
+  }
+}
+
+  Widget _inputField({
+    required String label,
+    required TextEditingController controller,
     bool isPassword = false,
+    bool? obscure,
+    VoidCallback? onToggleObscure,
   }) {
     return TextField(
       controller: controller,
-      obscureText: isPassword,
+      obscureText: obscure ?? false,
+      style: AppTextStyles.cardTitle.copyWith(fontSize: 14),
       decoration: InputDecoration(
-        labelText: title,
+        labelText: label,
+        labelStyle: AppTextStyles.body,
         floatingLabelBehavior: FloatingLabelBehavior.never,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.bgSurface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white),
+          borderRadius: BorderRadius.circular(13),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(13),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(13),
+          borderSide: const BorderSide(color: AppColors.borderAccent, width: 1.5),
         ),
-        labelStyle: TextStyle(color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _errorMessage() {
-    return Text(errorMessage == '' ? '' : '$errorMessage');
-  }
-
-  Widget _submitButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: isLogin
-            ? signInWithEmailPassword
-            : createUserWithEmailPassword,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: Text(
-          isLogin ? 'Login' : 'Register',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-
-  Widget _loginOrRegisterButton() {
-    return TextButton(
-      onPressed: () {
-        setState(() {
-          isLogin = !isLogin;
-        });
-      },
-      child: Text(
-        isLogin ? 'Register Instead' : 'Login Instead',
-        style: TextStyle(color: Colors.white),
+        suffixIcon: isPassword
+            ? GestureDetector(
+                onTap: onToggleObscure,
+                child: Icon(
+                  obscure! ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  size: 18,
+                  color: AppColors.textTertiary,
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -163,47 +219,168 @@ class _LoginPage extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Container(
-        margin: const EdgeInsets.only(
-          right: 32,
-          top: 128,
-          bottom: 128,
-          left: 32,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.black,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.black, width: 2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              isLogin ? 'Login' : 'SignUp',
-              style: const TextStyle(fontSize: 32, color: Colors.white),
-            ),
-            const SizedBox(height: 32),
-            _entryField('Email', _controllerEmail, isPassword: false),
-            const SizedBox(height: 4),
-            _entryField('Password', _controllerPassword, isPassword: true),
-            const SizedBox(height: 4),
-            if (!isLogin)
-              _entryField(
-                'ReEnter Password',
-                _controllerRePassword,
-                isPassword: true,
+      backgroundColor: AppColors.bgPage,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 48, 24, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 0),
+                child: GestureDetector(
+                  onTap: () => Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OnboardingFlow()),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 13, color: AppColors.textSecondary),
+                      const SizedBox(width: 5),
+                      Text('Back', style: AppTextStyles.body),
+                    ],
+                  ),
+                ),
               ),
-            if (!isLogin) const SizedBox(height: 4),
-            _errorMessage(),
-            const SizedBox(height: 12),
-            _submitButton(),
-            _loginOrRegisterButton(),
-          ],
+
+              const SizedBox(height: 28),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 60),
+                child: AppBadge(isLogin ? 'Welcome back' : 'Get started'),
+              ),
+
+              const SizedBox(height: 10),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 80),
+                child: RichText(
+                  text: TextSpan(
+                    style: AppTextStyles.pageTitle,
+                    children: [
+                      TextSpan(text: isLogin ? 'Log in to\n' : 'Create your\n'),
+                      TextSpan(
+                        text: isLogin ? 'your account' : 'account',
+                        style: AppTextStyles.pageTitle.copyWith(
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.textAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 140),
+                child: Text(
+                  isLogin
+                      ? 'Pick up right where you left off.'
+                      : 'Start tracking the hobbies you love.',
+                  style: AppTextStyles.body,
+                ),
+              ),
+
+              const SizedBox(height: 36),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 200),
+                child: _inputField(
+                  label: 'Email address',
+                  controller: _controllerEmail,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 260),
+                child: _inputField(
+                  label: 'Password',
+                  controller: _controllerPassword,
+                  isPassword: true,
+                  obscure: _obscurePassword,
+                  onToggleObscure: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
+
+              if (!isLogin) ...[
+                const SizedBox(height: 10),
+                FadeSlideIn(
+                  delay: const Duration(milliseconds: 320),
+                  child: _inputField(
+                    label: 'Confirm password',
+                    controller: _controllerRePassword,
+                    isPassword: true,
+                    obscure: _obscureRePassword,
+                    onToggleObscure: () =>
+                        setState(() => _obscureRePassword = !_obscureRePassword),
+                  ),
+                ),
+              ],
+
+              if (errorMessage != null && errorMessage!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                FadeSlideIn(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1F1),
+                      border: Border.all(color: const Color(0xFFFFCDD2)),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline_rounded,
+                            size: 15, color: Color(0xFFD32F2F)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            errorMessage!,
+                            style: AppTextStyles.label.copyWith(
+                              color: const Color(0xFFD32F2F),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 24),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 360),
+                child: PrimaryButton(
+                  label: isLogin ? 'Log in →' : 'Create account →',
+                  dark: true,
+                  onTap: isLogin ? _signIn : _signUp,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              FadeSlideIn(
+                delay: const Duration(milliseconds: 400),
+                child: GhostButton(
+                  label: isLogin
+                      ? "Don't have an account? Sign up"
+                      : 'Already have an account? Log in',
+                  onTap: () => setState(() {
+                    isLogin = !isLogin;
+                    errorMessage = null;
+                  }),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

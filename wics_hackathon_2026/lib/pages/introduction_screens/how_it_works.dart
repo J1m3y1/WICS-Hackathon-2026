@@ -80,7 +80,6 @@ class _StepCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Big italic number
           SizedBox(
             width: 40,
             child: Text(

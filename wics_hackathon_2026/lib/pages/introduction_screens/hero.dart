@@ -11,7 +11,8 @@ const _morphWords = [
 
 class HeroScreen extends StatefulWidget {
   final VoidCallback onNext;
-  const HeroScreen({super.key, required this.onNext});
+  final VoidCallback? onSignIn;
+  const HeroScreen({super.key, required this.onNext, this.onSignIn});
 
   @override
   State<HeroScreen> createState() => _HeroScreenState();
@@ -29,7 +30,6 @@ class _HeroScreenState extends State<HeroScreen>
   @override
   void initState() {
     super.initState();
-    // Underline draw-in animation
     _underlineCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
@@ -38,8 +38,6 @@ class _HeroScreenState extends State<HeroScreen>
     Future.delayed(const Duration(milliseconds: 900), () {
       if (mounted) _underlineCtrl.forward();
     });
-
-    // Word morph timer
     _timer = Timer.periodic(const Duration(milliseconds: 2600), (_) {
       if (!mounted) return;
       setState(() => _wordVisible = false);
@@ -77,8 +75,6 @@ class _HeroScreenState extends State<HeroScreen>
           child: Column(
             children: [
               SizedBox(height: h * 0.04),
-
-              // Logo
               FadeSlideIn(
                 delay: const Duration(milliseconds: 200),
                 child: Column(
@@ -99,8 +95,6 @@ class _HeroScreenState extends State<HeroScreen>
               ),
 
               SizedBox(height: h * 0.03),
-
-              // Hero headline with morphing word
               FadeSlideIn(
                 delay: const Duration(milliseconds: 320),
                 child: Column(
@@ -129,7 +123,6 @@ class _HeroScreenState extends State<HeroScreen>
                               ),
                               textAlign: TextAlign.center,
                             ),
-                            // Underline
                             Positioned(
                               bottom: -4, left: 0, right: 0,
                               child: AnimatedBuilder(
@@ -165,7 +158,6 @@ class _HeroScreenState extends State<HeroScreen>
 
               SizedBox(height: h * 0.025),
 
-              // Subtitle
               FadeSlideIn(
                 delay: const Duration(milliseconds: 420),
                 child: Text(
@@ -176,8 +168,6 @@ class _HeroScreenState extends State<HeroScreen>
               ),
 
               SizedBox(height: h * 0.038),
-
-              // Hobby chips
               FadeSlideIn(
                 delay: const Duration(milliseconds: 480),
                 child: Wrap(
@@ -195,7 +185,6 @@ class _HeroScreenState extends State<HeroScreen>
 
               SizedBox(height: h * 0.05),
 
-              // CTA buttons
               FadeSlideIn(
                 delay: const Duration(milliseconds: 560),
                 child: Column(
@@ -206,7 +195,7 @@ class _HeroScreenState extends State<HeroScreen>
                       onTap: widget.onNext,
                     ),
                     SizedBox(height: h * 0.014),
-                    GhostButton(label: 'Sign in instead', onTap: widget.onNext),
+                    GhostButton(label: 'Sign in instead', onTap: widget.onSignIn),
                   ],
                 ),
               ),

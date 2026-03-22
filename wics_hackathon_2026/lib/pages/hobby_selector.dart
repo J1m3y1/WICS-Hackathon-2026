@@ -214,7 +214,7 @@ class _HobbyPageState extends State<HobbyPage> {
     return Row(
       children: [
         const Expanded(
-          child: Text('Hobby Lobby', style: AppTextStyles.pageTitle),
+          child: Text('HobbyUp', style: AppTextStyles.pageTitle),
         ),
         GestureDetector(
           onTap: () {

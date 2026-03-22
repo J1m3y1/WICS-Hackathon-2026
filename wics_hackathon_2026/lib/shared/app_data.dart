@@ -7,6 +7,7 @@ class Hobby {
   final String currentRank;
   final String nextRank;
   final String imagePath;
+  final String category;
 
   Hobby({
     required this.name,
@@ -17,22 +18,51 @@ class Hobby {
     required this.currentRank,
     required this.nextRank,
     required this.imagePath,
+    required this.category,
   });
 
-  factory Hobby.fromMap(Map<String, dynamic> infoMap, Map<String, dynamic>? hobbyData) {
+  factory Hobby.fromMap(Map<String, dynamic> data) {
     return Hobby(
-      name: infoMap['name'] ?? '',
-      level: infoMap['level'] ?? 0,
-      progress: (infoMap['progress'] ?? 0.0).toDouble(),
-      xp: infoMap['xp'] ?? 0,
-      maxXp: infoMap['maxXp'] ?? 0,
-      currentRank: infoMap['currentRank'] ?? '',
-      nextRank: infoMap['nextRank'] ?? '',
-      imagePath: infoMap['imagePath'] ?? '',
+      name: data['name'] ?? '',
+      level: data['level'] ?? 0,
+      progress: (data['progress'] ?? 0.0).toDouble(),
+      xp: data['xp'] ?? 0,
+      maxXp: data['maxXp'] ?? 0,
+      currentRank: data['currentRank'] ?? '',
+      nextRank: data['nextRank'] ?? '',
+      imagePath: data['imagePath'] ?? '',
+      category: data['category'] ?? 'Focus',
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'level': level,
+      'progress': progress,
+      'xp': xp,
+      'maxXp': maxXp,
+      'currentRank': currentRank,
+      'nextRank': nextRank,
+      'imagePath': imagePath,
+      'category': category,
+    };
   }
 }
 
+const List<String> hobbyCategories = [
+  'Creativity',
+  'Discipline',
+  'Focus',
+  'Strategy',
+  'Consistency',
+];
+
+const Map<String, String> hobbyCategoryMap = {
+  'Cooking': 'Creativity',
+  'Guitar': 'Creativity',
+  'Reading': 'Focus',
+};
 
 class TaskItem {
   final String title;
@@ -45,4 +75,3 @@ class TaskItem {
     this.isCompleted = false,
   });
 }
-

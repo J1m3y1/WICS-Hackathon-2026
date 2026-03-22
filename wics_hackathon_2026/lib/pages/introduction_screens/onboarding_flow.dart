@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_theme.dart';
+import '../../shared/app_theme.dart';
 import '../login_signup.dart';
 import 'hero.dart';
 import 'how_it_works.dart';
@@ -49,7 +49,10 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   @override
-  void dispose() { _pageCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +60,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       backgroundColor: AppColors.bgPage,
       body: Column(
         children: [
-          // PageView
           Expanded(
             child: PageView(
               controller: _pageCtrl,
@@ -72,8 +74,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               ],
             ),
           ),
-
-          // Bottom dot indicator + nav bar
           _BottomNav(current: _current, total: _pageCount, onDotTap: _goToPage),
         ],
       ),
@@ -85,15 +85,20 @@ class _BottomNav extends StatelessWidget {
   final int current;
   final int total;
   final ValueChanged<int> onDotTap;
-  const _BottomNav({required this.current, required this.total, required this.onDotTap});
+
+  const _BottomNav({
+    required this.current,
+    required this.total,
+    required this.onDotTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 64,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.bgPage,
-        border: const Border(top: BorderSide(color: AppColors.border)),
+        border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -105,7 +110,10 @@ class _BottomNav extends StatelessWidget {
               onTap: () => onDotTap(i),
               behavior: HitTestBehavior.opaque,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 12,
+                ),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 350),
                   curve: Curves.easeInOutCubic,

@@ -56,7 +56,7 @@ Medium Phone 36.1
 }ing google-services.json…]()
 
                 ^^^
-The goooge-services.json file should look like above
+The google-services.json file should look like above
 Upload the fire base API key/google-service-json file under the app directory 
 
 Test Account:

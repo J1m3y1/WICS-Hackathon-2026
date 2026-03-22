@@ -18,7 +18,6 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
-    // Use widget.hobbyKey here
     screens = [
       HomePage(hobbyKey: widget.hobbyKey),
       CommunityFeed(hobbyKey: widget.hobbyKey),

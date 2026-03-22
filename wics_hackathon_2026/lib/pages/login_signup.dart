@@ -153,7 +153,6 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back button
               FadeSlideIn(
                 delay: const Duration(milliseconds: 0),
                 child: GestureDetector(
@@ -175,7 +174,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 28),
 
-              // Tag badge
               FadeSlideIn(
                 delay: const Duration(milliseconds: 60),
                 child: AppBadge(isLogin ? 'Welcome back' : 'Get started'),
@@ -183,7 +181,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 10),
 
-              // Heading
               FadeSlideIn(
                 delay: const Duration(milliseconds: 80),
                 child: RichText(
@@ -217,7 +214,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 36),
 
-              // Email
               FadeSlideIn(
                 delay: const Duration(milliseconds: 200),
                 child: _inputField(
@@ -228,7 +224,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 10),
 
-              // Password
               FadeSlideIn(
                 delay: const Duration(milliseconds: 260),
                 child: _inputField(
@@ -241,7 +236,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
 
-              // Confirm password (sign-up only)
               if (!isLogin) ...[
                 const SizedBox(height: 10),
                 FadeSlideIn(
@@ -257,7 +251,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ],
 
-              // Error message
               if (errorMessage != null && errorMessage!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 FadeSlideIn(
@@ -290,7 +283,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 24),
 
-              // Primary action
               FadeSlideIn(
                 delay: const Duration(milliseconds: 360),
                 child: PrimaryButton(
@@ -302,7 +294,6 @@ class _LoginPageState extends State<LoginPage> {
 
               const SizedBox(height: 12),
 
-              // Toggle
               FadeSlideIn(
                 delay: const Duration(milliseconds: 400),
                 child: GhostButton(

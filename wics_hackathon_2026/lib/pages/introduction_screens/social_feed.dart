@@ -87,7 +87,6 @@ class _PostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Media thumbnail
           Container(
             height: 80,
             decoration: BoxDecoration(
@@ -102,7 +101,6 @@ class _PostCard extends StatelessWidget {
             ),
           ),
 
-          // Meta
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
             child: Row(

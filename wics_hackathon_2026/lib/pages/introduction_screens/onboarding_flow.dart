@@ -57,7 +57,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       backgroundColor: AppColors.bgPage,
       body: Column(
         children: [
-          // PageView
           Expanded(
             child: PageView(
               controller: _pageCtrl,
@@ -73,7 +72,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
             ),
           ),
 
-          // Bottom dot indicator + nav bar
           _BottomNav(current: _current, total: _pageCount, onDotTap: _goToPage),
         ],
       ),

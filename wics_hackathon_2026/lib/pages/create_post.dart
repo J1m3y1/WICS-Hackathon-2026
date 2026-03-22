@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wics_hackathon_2026/services/auth.dart';
 
 class CreatePostPage extends StatefulWidget {
   final String username;
-  const CreatePostPage({super.key, required this.username});
+  final String hobbyKey;
+  const CreatePostPage({super.key, required this.username, required this.hobbyKey});
 
   @override
   State<CreatePostPage> createState() => _CreatePostPageState();
@@ -12,41 +16,96 @@ class CreatePostPage extends StatefulWidget {
 
 class _CreatePostPageState extends State<CreatePostPage> {
   File? _selectedImage;
-  String? _selectedHobby;
   int _level = 1;
   int _xp = 0;
+  bool _isUploading = false;
+  bool _isLoadingLevel = true;
 
   static const Color _accentColor = Color(0xFFC47A20);
 
-  final List<String> _hobbies = [
-    'Gym', 'Guitar', 'Painting', 'Chess', 'Running', 'Cooking', 'Reading'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _xp = Random().nextInt(11) + 10; 
+    _fetchCurrentLevel();
+  }
+
+  Future<void> _fetchCurrentLevel() async {
+    try {
+      final user = Auth().currentUser;
+      if(user != null) {
+        final doc = await FirebaseFirestore.instance.collection('hobbies').doc(user.uid).get();
+
+        if(doc.exists) {
+          final data = doc.data() as Map<String, dynamic>;
+          final hobbyData = data[widget.hobbyKey] as Map<String, dynamic>?;
+          final currentLevel = hobbyData?['info']?['level'];
+
+          if(currentLevel != null) {
+            setState(() {
+              _level = currentLevel;
+              _isLoadingLevel = false;
+            });
+          }
+        }
+      } 
+    } catch (e) {
+      debugPrint("Error fetching level: $e");
+    } finally {
+      if(mounted) setState(() => _isLoadingLevel = false);
+    }
+    }
+  
 
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
       setState(() => _selectedImage = File(picked.path));
     }
   }
 
-  void _submit() {
-    if (_selectedImage == null || _selectedHobby == null) {
+  void _submit() async {
+    if (_selectedImage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a photo and select a hobby')),
+        const SnackBar(content: Text('Please add a photo first!')),
       );
-      return;
+      return; 
     }
 
-    // Return the new post data back to the feed
-    Navigator.pop(context, {
-      'username': widget.username,
-      'hobby': _selectedHobby,
-      'level': _level,
-      'xp': _xp,
-      'imagePath': _selectedImage!.path,
-      'isFile': true,
-    });
+    setState(() => _isUploading = true);
+
+    try {
+      final user = Auth().currentUser;
+      if (user == null) throw Exception("User not logged in");
+
+      final newPost = {
+        'username': widget.username,
+        'hobby': widget.hobbyKey,
+        'level': _level,
+        'xp': _xp,
+        'timeAgo': "Just now",
+        'imagePath': _selectedImage!.path,
+        'isFile': true,
+      };
+
+      await FirebaseFirestore.instance.collection('posts').doc(user.uid).set({
+        'post': {
+          widget.hobbyKey: {
+            'Post': FieldValue.arrayUnion([newPost])
+          }
+        }
+      }, SetOptions(merge: true));
+
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
   }
 
   @override
@@ -62,24 +121,18 @@ class _CreatePostPageState extends State<CreatePostPage> {
         ),
         title: const Text(
           'New Post',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800),
         ),
         actions: [
-          TextButton(
-            onPressed: _submit,
-            child: Text(
-              'Share',
-              style: TextStyle(
-                color: _accentColor,
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-              ),
+          _isUploading 
+          ? const Center(child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+            ))
+          : TextButton(
+              onPressed: _submit,
+              child: const Text('Share', style: TextStyle(color: _accentColor, fontWeight: FontWeight.bold)),
             ),
-          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -87,12 +140,11 @@ class _CreatePostPageState extends State<CreatePostPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image picker
             GestureDetector(
               onTap: _pickImage,
               child: Container(
                 width: double.infinity,
-                // aspectRatio: 1,
+                height: 300,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F5F5),
                   borderRadius: BorderRadius.circular(16),
@@ -103,108 +155,20 @@ class _CreatePostPageState extends State<CreatePostPage> {
                         borderRadius: BorderRadius.circular(16),
                         child: Image.file(_selectedImage!, fit: BoxFit.cover),
                       )
-                    : Column(
+                    : const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_photo_alternate_outlined,
-                              size: 48, color: Colors.grey[400]),
-                          const SizedBox(height: 8),
-                          Text('Tap to add photo',
-                              style: TextStyle(color: Colors.grey[400])),
+                          Icon(Icons.add_photo_alternate_outlined, size: 48, color: Colors.grey),
+                          Text('Tap to add photo'),
                         ],
                       ),
               ),
             ),
-
             const SizedBox(height: 24),
 
-            // Username (auto-filled, read only)
-            const Text('Username',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text('@${widget.username}',
-                  style: const TextStyle(color: Colors.grey)),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Hobby dropdown
-            const Text('Hobby',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              value: _selectedHobby,
-              hint: const Text('Select a hobby'),
-              decoration: InputDecoration(
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFEDE9DF)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFEDE9DF)),
-                ),
-              ),
-              items: _hobbies
-                  .map((h) => DropdownMenuItem(value: h, child: Text(h)))
-                  .toList(),
-              onChanged: (val) => setState(() => _selectedHobby = val),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Level slider
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Level',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                Text('Lvl $_level',
-                    style: TextStyle(
-                        color: _accentColor, fontWeight: FontWeight.w700)),
-              ],
-            ),
-            Slider(
-              value: _level.toDouble(),
-              min: 1,
-              max: 10,
-              divisions: 9,
-              activeColor: _accentColor,
-              onChanged: (val) => setState(() => _level = val.toInt()),
-            ),
-
-            const SizedBox(height: 20),
-
-            // XP input
-            const Text('XP Earned',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            const SizedBox(height: 8),
-            TextFormField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                hintText: 'e.g. 120',
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFEDE9DF)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFEDE9DF)),
-                ),
-              ),
-              onChanged: (val) => setState(() => _xp = int.tryParse(val) ?? 0),
-            ),
+            const Text('Hobby Context', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Posting to: ${widget.hobbyKey}', style: const TextStyle(color: _accentColor)),
+            Text('Lvl $_level', style: const TextStyle(color: _accentColor)),
           ],
         ),
       ),

@@ -72,7 +72,7 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
 
               const SizedBox(height: 28),
 
-              // Stacked task cards
+
               FadeSlideIn(
                 delay: const Duration(milliseconds: 200),
                 child: SizedBox(
@@ -81,7 +81,6 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                     clipBehavior: Clip.none,
                     alignment: Alignment.topCenter,
                     children: [
-                      // Background cards (stack illusion)
                       ...[2, 1].map((depth) => Positioned(
                         top: depth * 6.0,
                         left: depth * 5.0,
@@ -99,7 +98,6 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
                         ),
                       )),
 
-                      // Top draggable card
                       Positioned(
                         top: 0, left: 0, right: 0,
                         child: GestureDetector(
@@ -142,7 +140,6 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
 
               const SizedBox(height: 16),
 
-              // Hint
               FadeSlideIn(
                 delay: const Duration(milliseconds: 320),
                 child: Center(
@@ -154,8 +151,6 @@ class _TaskFeedScreenState extends State<TaskFeedScreen>
               ),
 
               const SizedBox(height: 20),
-
-              // Tap to simulate button
               FadeSlideIn(
                 delay: const Duration(milliseconds: 380),
                 child: GestureDetector(
